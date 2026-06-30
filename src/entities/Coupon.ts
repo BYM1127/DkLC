@@ -11,7 +11,7 @@ export class Coupon {
   @Column()
   discountType!: string; // "Percentage" or "Fixed"
 
-  @Column()
+  @Column({ type: 'real' })
   value!: number;
 
   @Column()

@@ -29,6 +29,7 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `n
 - Express
 - TypeORM
 - SQLite
+- PostgreSQL for permanent production order storage
 - Nodemailer, currently used alongside notification/WhatsApp helpers
 - ASP.NET Core / EF Core SQLite for the alternate .NET backend
 
@@ -111,7 +112,9 @@ The application reads environment variables from `.env` using `dotenv`.
 | --- | --- | --- |
 | `NODE_ENV` | `development` | Runtime environment. |
 | `PORT` | `3000` | Local HTTP server port. |
-| `DB_PATH` | `data/dimpho_catering.sqlite` | SQLite database path. On Netlify, the app falls back to `/tmp/dimpho_catering.sqlite`. |
+| `DB_PATH` | `data/dimpho_catering.sqlite` | Local SQLite database path. Used only when `DATABASE_URL` is not set. |
+| `DATABASE_URL` | none | Hosted Postgres connection string for permanent production storage. Required on Netlify. |
+| `DATABASE_SSL` | `true` | Set to `false` only if your database does not require SSL. |
 | `ADMIN_WHATSAPP_NUMBER` | From `.env.example` | Business WhatsApp number used for admin notification links. |
 | `WHATSAPP_NUMBER` | From `.env.example` | Public/business WhatsApp number used by the website. |
 | `SMTP_HOST` | `smtp.gmail.com` in example | SMTP host for email-capable notification flows. |
@@ -125,16 +128,16 @@ Do not commit `.env`, local database files, generated build folders, or runtime 
 
 ## Database
 
-The Node.js API uses SQLite through TypeORM.
+The Node.js API uses TypeORM.
 
-- Local default database: `data/dimpho_catering.sqlite`
-- Netlify fallback database: `/tmp/dimpho_catering.sqlite`
+- Local default database: SQLite at `data/dimpho_catering.sqlite`
+- Production database: hosted Postgres through `DATABASE_URL`
 - Schema synchronization is enabled in `src/database.ts`.
 - Initial coupons are seeded automatically when the coupon table is empty:
   - `WELCOME10`: 10% discount
   - `DKL50`: R50 fixed discount
 
-Because SQLite files are local runtime data, they are ignored by Git.
+Because SQLite files are local runtime data, they are ignored by Git. On Netlify, `DATABASE_URL` is required so order, booking, contact, and coupon data is stored permanently.
 
 ## Available Scripts
 
@@ -393,10 +396,11 @@ Netlify settings are defined in `netlify.toml`:
 - Publish directory: `DimphoKeLesegoCateringBackend/wwwroot`
 - Functions directory: `netlify/functions`
 - API redirect: `/api/*` to the Netlify function
+- Required database variable: `DATABASE_URL`
 
 Set production environment variables in the Netlify dashboard. Avoid relying on local `.env` files in production.
 
-Note: Netlify's `/tmp` filesystem is temporary. For durable production data, move from SQLite-on-disk to a hosted database service.
+Netlify's filesystem is temporary and read-only outside `/tmp`, so this app requires a hosted Postgres database in production. Good options include Supabase, Neon, Railway, Render Postgres, or any Postgres service that gives you a connection string.
 
 ### Render
 

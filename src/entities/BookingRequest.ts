@@ -11,25 +11,25 @@ export class BookingRequest {
   @Column()
   phone!: string;
 
-  @Column()
+  @Column({ default: '' })
   email!: string;
 
-  @Column()
+  @Column({ default: '' })
   eventType!: string;
 
-  @Column()
+  @Column({ default: '' })
   eventDate!: string;
 
-  @Column()
-  estimatedGuests!: number;
+  @Column({ type: 'integer', nullable: true })
+  estimatedGuests?: number | null;
 
-  @Column()
+  @Column({ default: '' })
   preferredPackage!: string;
 
-  @Column()
+  @Column({ default: '' })
   fulfilmentType!: string;
 
-  @Column()
+  @Column({ default: '' })
   notes!: string;
 
   @Column()

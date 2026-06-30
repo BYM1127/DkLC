@@ -7,7 +7,8 @@ Node.js/Express backend for the Dimpho ke Lesego Catering website.
 - Node.js + Express
 - TypeScript
 - TypeORM
-- SQLite for local/demo storage
+- SQLite for local storage
+- Postgres for permanent production storage
 - Free WhatsApp click-to-chat links
 
 ## Setup
@@ -32,6 +33,8 @@ Copy `.env.example` to `.env`.
 NODE_ENV=development
 PORT=8080
 DB_PATH=data/dimpho_catering.sqlite
+DATABASE_URL=
+DATABASE_SSL=true
 ADMIN_WHATSAPP_NUMBER=+27796929591
 WHATSAPP_NUMBER=27796929591
 ```
@@ -58,4 +61,4 @@ This is the free WhatsApp method. It opens WhatsApp with the order message fille
 
 See `netlify.toml`.
 
-SQLite on Netlify is temporary because serverless storage is not permanent. For production order history, use a hosted database later.
+Set `DATABASE_URL` on Netlify to a hosted Postgres database. Without it, the serverless API refuses to start because temporary filesystem storage is not permanent.

@@ -1532,7 +1532,7 @@ orderForm.addEventListener('submit', function(e){
   .then(async res => {
     const data = await res.json().catch(() => ({}));
     if (!res.ok) {
-      throw new Error(data.message || "Failed to place order.");
+      throw new Error(data.message || data.errorMessage || "Failed to place order.");
     }
     return data;
   })

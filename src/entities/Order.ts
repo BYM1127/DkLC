@@ -33,13 +33,13 @@ export class Order {
   @Column()
   notes!: string;
 
-  @Column()
+  @Column({ type: 'real' })
   originalAmount!: number;
 
-  @Column()
+  @Column({ type: 'real' })
   discountAmount!: number;
 
-  @Column()
+  @Column({ type: 'real' })
   totalAmount!: number;
 
   @Column()

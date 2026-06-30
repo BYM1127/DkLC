@@ -66,7 +66,9 @@ router.post('/bookings', async (req: Request, res: Response) => {
     }
 
     const blockedDateRepo = AppDataSource.getRepository(BlockedDate);
-    const isBlocked = await blockedDateRepo.findOne({ where: { date: eventDate } });
+    const isBlocked = eventDate
+      ? await blockedDateRepo.findOne({ where: { date: eventDate } })
+      : null;
 
     if (isBlocked) {
       return res.status(400).json({ message: 'Sorry, we are fully booked on this date. Please select another date.' });
@@ -76,13 +78,13 @@ router.post('/bookings', async (req: Request, res: Response) => {
     const booking = bookingRepo.create({
       name,
       phone,
-      email,
-      eventType,
-      eventDate,
-      estimatedGuests,
-      preferredPackage,
-      fulfilmentType,
-      notes,
+      email: email || '',
+      eventType: eventType || '',
+      eventDate: eventDate || '',
+      estimatedGuests: estimatedGuests || null,
+      preferredPackage: preferredPackage || '',
+      fulfilmentType: fulfilmentType || '',
+      notes: notes || '',
       status: 'Pending',
     });
 
