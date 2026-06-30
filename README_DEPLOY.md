@@ -4,6 +4,13 @@
 - Double-click start-all.bat
 - Or run run-backend.bat
 
+## Netlify deployment
+1. Push this project to GitHub.
+2. Create a new Netlify site from Git.
+3. Connect the GitHub repository.
+4. Netlify will use `netlify.toml` automatically.
+5. Add the environment variables from `.env.example`.
+
 ## Render deployment
 1. Push this project to GitHub.
 2. Create a new Render Web Service.

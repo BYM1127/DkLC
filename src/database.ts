@@ -1,7 +1,7 @@
 import { DataSource } from 'typeorm';
 import { ContactMessage, BookingRequest, Order, Coupon, BlockedDate } from './entities';
 
-const dbPath = process.env.DB_PATH || (process.env.VERCEL ? '/tmp/dimpho_catering.sqlite' : 'data/dimpho_catering.sqlite');
+const dbPath = process.env.DB_PATH || (process.env.NETLIFY ? '/tmp/dimpho_catering.sqlite' : 'data/dimpho_catering.sqlite');
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',

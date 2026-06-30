@@ -7,7 +7,7 @@ The repository contains two backend implementations:
 - A primary Node.js/TypeScript Express API with SQLite and TypeORM.
 - A .NET backend project under `DimphoKeLesegoCateringBackend/`.
 
-The Node.js API is the deployment-ready path used by the root `package.json`, `vercel.json`, `render.yaml`, and `api/index.js` serverless entry point.
+The Node.js API is the deployment-ready path used by the root `package.json`, `netlify.toml`, `render.yaml`, and `netlify/functions/api.js` serverless entry point.
 
 ## Features
 
@@ -20,7 +20,7 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `v
 - Booking and order status updates.
 - WhatsApp click-to-chat links for customer and business notifications.
 - SQLite persistence for simple local and hosted deployments.
-- Vercel and Render deployment configuration.
+- Netlify and Render deployment configuration.
 
 ## Tech Stack
 
@@ -36,24 +36,26 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `v
 
 ```text
 .
-├── api/                                # Vercel serverless entry point
-├── src/                                # Node.js/TypeScript backend
-│   ├── entities/                       # TypeORM database models
-│   ├── routes/                         # Public and admin API routes
-│   ├── services/                       # Email/WhatsApp notification services
-│   ├── app.ts                          # Express app configuration
-│   ├── database.ts                     # SQLite + TypeORM setup
-│   └── index.ts                        # Local server entry point
-├── DimphoKeLesegoCateringBackend/      # ASP.NET Core backend and static site
-│   ├── Controllers/                    # .NET API controllers
-│   ├── Data/                           # EF Core database context
-│   ├── Models/                         # .NET data models
-│   ├── Services/                       # .NET notification service
-│   └── wwwroot/                        # Static website files
-├── package.json                        # Node scripts and dependencies
-├── vercel.json                         # Vercel deployment configuration
-├── render.yaml                         # Render deployment configuration
-└── .env.example                        # Example environment variables
+|-- netlify/
+|   `-- functions/
+|       `-- api.js                      # Netlify serverless function entry point
+|-- src/                                # Node.js/TypeScript backend
+|   |-- entities/                       # TypeORM database models
+|   |-- routes/                         # Public and admin API routes
+|   |-- services/                       # Email/WhatsApp notification services
+|   |-- app.ts                          # Express app configuration
+|   |-- database.ts                     # SQLite + TypeORM setup
+|   `-- index.ts                        # Local server entry point
+|-- DimphoKeLesegoCateringBackend/      # ASP.NET Core backend and static site
+|   |-- Controllers/                    # .NET API controllers
+|   |-- Data/                           # EF Core database context
+|   |-- Models/                         # .NET data models
+|   |-- Services/                       # .NET notification service
+|   `-- wwwroot/                        # Static website files
+|-- package.json                        # Node scripts and dependencies
+|-- netlify.toml                        # Netlify deployment configuration
+|-- render.yaml                         # Render deployment configuration
+`-- .env.example                        # Example environment variables
 ```
 
 ## Requirements
@@ -109,7 +111,7 @@ The application reads environment variables from `.env` using `dotenv`.
 | --- | --- | --- |
 | `NODE_ENV` | `development` | Runtime environment. |
 | `PORT` | `3000` | Local HTTP server port. |
-| `DB_PATH` | `data/dimpho_catering.sqlite` | SQLite database path. On Vercel, the app falls back to `/tmp/dimpho_catering.sqlite`. |
+| `DB_PATH` | `data/dimpho_catering.sqlite` | SQLite database path. On Netlify, the app falls back to `/tmp/dimpho_catering.sqlite`. |
 | `ADMIN_WHATSAPP_NUMBER` | From `.env.example` | Business WhatsApp number used for admin notification links. |
 | `WHATSAPP_NUMBER` | From `.env.example` | Public/business WhatsApp number used by the website. |
 | `SMTP_HOST` | `smtp.gmail.com` in example | SMTP host for email-capable notification flows. |
@@ -126,7 +128,7 @@ Do not commit `.env`, local database files, generated build folders, or runtime 
 The Node.js API uses SQLite through TypeORM.
 
 - Local default database: `data/dimpho_catering.sqlite`
-- Vercel fallback database: `/tmp/dimpho_catering.sqlite`
+- Netlify fallback database: `/tmp/dimpho_catering.sqlite`
 - Schema synchronization is enabled in `src/database.ts`.
 - Initial coupons are seeded automatically when the coupon table is empty:
   - `WELCOME10`: 10% discount
@@ -370,12 +372,12 @@ Backward-compatible alias for the WhatsApp send endpoint.
 
 ## Deployment
 
-### Vercel
+### Netlify
 
 This project includes:
 
-- `vercel.json`
-- `api/index.js`
+- `netlify.toml`
+- `netlify/functions/api.js`
 
 Build locally before deployment:
 
@@ -383,11 +385,18 @@ Build locally before deployment:
 npm run build
 ```
 
-The Vercel function imports the compiled Express app from `dist/app`, so the TypeScript build must complete successfully before the serverless API can run.
+The Netlify function imports the compiled Express app from `dist/app`, so the TypeScript build must complete successfully before the serverless API can run.
 
-Set production environment variables in the Vercel dashboard. Avoid relying on local `.env` files in production.
+Netlify settings are defined in `netlify.toml`:
 
-Note: Vercel's `/tmp` filesystem is temporary. For durable production data, move from SQLite-on-disk to a hosted database service.
+- Build command: `npm install && npm run build`
+- Publish directory: `DimphoKeLesegoCateringBackend/wwwroot`
+- Functions directory: `netlify/functions`
+- API redirect: `/api/*` to the Netlify function
+
+Set production environment variables in the Netlify dashboard. Avoid relying on local `.env` files in production.
+
+Note: Netlify's `/tmp` filesystem is temporary. For durable production data, move from SQLite-on-disk to a hosted database service.
 
 ### Render
 
@@ -430,5 +439,4 @@ Additional setup notes are included in:
 - `WHATSAPP_SETUP.md`
 - `README_BACKEND.md`
 - `README_DEPLOY.md`
-- `VERCEL_DEPLOY.md`
 - `SETUP_COMPLETE.md`

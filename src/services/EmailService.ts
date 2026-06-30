@@ -8,7 +8,7 @@ export class EmailService {
   private logsPath: string;
 
   constructor(webRootPath: string) {
-    this.logsPath = process.env.VERCEL ? path.join('/tmp', 'whatsapp') : path.join(webRootPath, 'logs', 'whatsapp');
+    this.logsPath = process.env.NETLIFY ? path.join('/tmp', 'whatsapp') : path.join(webRootPath, 'logs', 'whatsapp');
     this.ensureLogsDirectoryExists();
   }
 

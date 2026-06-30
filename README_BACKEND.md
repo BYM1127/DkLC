@@ -54,8 +54,8 @@ Orders return a `businessWhatsappLink`. The frontend uses that link for the `Sen
 
 This is the free WhatsApp method. It opens WhatsApp with the order message filled in; the customer taps Send.
 
-## Vercel
+## Netlify
 
-See `VERCEL_DEPLOY.md`.
+See `netlify.toml`.
 
-SQLite on Vercel is temporary because serverless storage is not permanent. For production order history, use a hosted database later.
+SQLite on Netlify is temporary because serverless storage is not permanent. For production order history, use a hosted database later.

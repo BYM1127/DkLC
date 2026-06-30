@@ -28,7 +28,7 @@ The backend also logs prepared WhatsApp messages:
 DimphoKeLesegoCateringBackend/wwwroot/logs/whatsapp/
 ```
 
-On Vercel, logs are written to `/tmp/whatsapp` and are temporary.
+On Netlify, logs are written to `/tmp/whatsapp` and are temporary.
 
 ## Important Limitation
 
