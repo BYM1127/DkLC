@@ -26,6 +26,14 @@ app.get('/quote.html', (_req, res) => {
   res.sendFile(path.join(wwwrootPath, 'quote.html'));
 });
 
+app.get('/admin', (_req, res) => {
+  res.sendFile(path.join(wwwrootPath, 'admin.html'));
+});
+
+app.get('/admin.html', (_req, res) => {
+  res.sendFile(path.join(wwwrootPath, 'admin.html'));
+});
+
 app.use((req, res) => {
   if (req.path.startsWith('/api')) {
     return res.status(404).json({ message: 'Route not found' });
