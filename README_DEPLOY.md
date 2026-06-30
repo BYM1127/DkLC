@@ -10,7 +10,8 @@
 3. Connect the GitHub repository.
 4. Netlify will use `netlify.toml` automatically.
 5. Add the environment variables from `.env.example`.
-6. Add `DATABASE_URL` from a hosted Postgres database. This is required for permanent order storage.
+6. Add `MONGODB_URI` from MongoDB Atlas. This is required for permanent order storage.
+7. Add `ADMIN_API_KEY` to protect admin API routes.
 
 ## Render deployment
 1. Push this project to GitHub.
@@ -22,12 +23,12 @@
 ## Environment variables for production
 - NODE_ENV=production
 - PORT=10000
-- DB_PATH=data/dimpho_catering.sqlite
-- DATABASE_URL=your-hosted-postgres-connection-string
-- DATABASE_SSL=true
+- MONGODB_URI=your-mongodb-atlas-connection-string
+- MONGODB_DB=dimpho_ke_lesego_catering
+- ADMIN_API_KEY=change-this-long-random-secret
 - WHATSAPP_NUMBER=27796929591
 - ADMIN_WHATSAPP_NUMBER=27796929591
 
 ## Notes
-- The app uses SQLite locally and Postgres in production when `DATABASE_URL` is set.
+- The app uses MongoDB Atlas for permanent production storage.
 - WhatsApp uses free click-to-chat links, so no Twilio account is required.

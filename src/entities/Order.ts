@@ -1,56 +1,22 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 import { OrderItem } from './OrderItem';
 
-@Entity('orders')
 export class Order {
-  @PrimaryGeneratedColumn()
   id!: number;
-
-  @Column()
   orderRef!: string;
-
-  @Column()
+  accessToken: string = '';
   name!: string;
-
-  @Column()
   phone!: string;
-
-  @Column()
-  email!: string;
-
-  @Column()
-  fulfilmentType!: string;
-
-  @Column()
-  deliveryAddress!: string;
-
-  @Column()
-  dateNeeded!: string;
-
-  @Column()
-  timeNeeded!: string;
-
-  @Column()
-  notes!: string;
-
-  @Column({ type: 'real' })
+  email: string = '';
+  fulfilmentType: string = '';
+  deliveryAddress: string = '';
+  dateNeeded: string = '';
+  timeNeeded: string = '';
+  notes: string = '';
   originalAmount!: number;
-
-  @Column({ type: 'real' })
   discountAmount!: number;
-
-  @Column({ type: 'real' })
   totalAmount!: number;
-
-  @Column()
-  couponApplied!: string;
-
-  @Column()
+  couponApplied: string = '';
   status: string = 'Pending';
-
-  @Column('simple-json')
   orderItems: OrderItem[] = [];
-
-  @CreateDateColumn()
   createdAt!: Date;
 }

@@ -246,13 +246,14 @@
     const urlParams = new URLSearchParams(window.location.search);
     const type = urlParams.get('type'); // "order" or "booking"
     const ref = urlParams.get('ref'); // order ref
+    const token = urlParams.get('token') || '';
     const id = urlParams.get('id'); // booking id
 
     if (type === 'order' && ref) {
       document.getElementById('docTypeTitle').textContent = "Receipt / Order Summary";
       document.getElementById('docRefLabel').textContent = "Order Ref: " + ref;
       
-      fetch('/api/orders/lookup/' + ref)
+      fetch('/api/orders/lookup/' + ref + '?token=' + encodeURIComponent(token))
         .then(res => {
           if (!res.ok) throw new Error("Order not found");
           return res.json();
@@ -310,7 +311,7 @@
       // Let's check: yes, we should add `GET /api/bookings/lookup/{id}` to ApiController.cs, or just fetch the booking.
       // Let's implement the Javascript call here: `/api/bookings/lookup/` + id.
       // Let's write the Javascript fetch code first, then add the endpoint to ApiController.
-      fetch('/api/bookings/lookup/' + id)
+      fetch('/api/bookings/lookup/' + id + '?token=' + encodeURIComponent(token))
         .then(res => {
           if (!res.ok) throw new Error("Booking request not found");
           return res.json();

@@ -16,6 +16,18 @@ const expressHandler = serverless(app, {
 });
 
 exports.handler = async (event, context) => {
-  await ensureAppReady();
-  return expressHandler(event, context);
+  try {
+    await ensureAppReady();
+    return expressHandler(event, context);
+  } catch (error) {
+    console.error('Failed to prepare app:', error);
+
+    return {
+      statusCode: 503,
+      headers: { 'content-type': 'application/json' },
+      body: JSON.stringify({
+        message: error && error.message ? error.message : 'Server failed to start',
+      }),
+    };
+  }
 };

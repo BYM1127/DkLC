@@ -3,10 +3,33 @@ import * as path from 'path';
 import { AppDataSource } from '../database';
 import { ContactMessage, BookingRequest, Order } from '../entities';
 import { EmailService } from '../services/EmailService';
+import { isServerlessRuntime } from '../runtime';
 
 const router = Router();
 const webRootPath = path.join(__dirname, '..', '..', 'DimphoKeLesegoCateringBackend', 'wwwroot');
 const notificationService = new EmailService(webRootPath);
+
+router.use((req, res, next) => {
+  const expectedKey = process.env.ADMIN_API_KEY;
+
+  if (!expectedKey && isServerlessRuntime()) {
+    return res.status(503).json({ message: 'ADMIN_API_KEY is required before admin routes can be used.' });
+  }
+
+  if (!expectedKey) {
+    return next();
+  }
+
+  const authHeader = req.header('authorization') || '';
+  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
+  const suppliedKey = req.header('x-admin-api-key') || bearerToken;
+
+  if (suppliedKey !== expectedKey) {
+    return res.status(401).json({ message: 'Unauthorized' });
+  }
+
+  return next();
+});
 
 // GET /api/admin/contacts
 router.get('/contacts', async (req: Request, res: Response) => {

@@ -4,7 +4,7 @@ Dimpho ke Lesego Catering is a catering website and backend API for handling cus
 
 The repository contains two backend implementations:
 
-- A primary Node.js/TypeScript Express API with SQLite and TypeORM.
+- A primary Node.js/TypeScript Express API with MongoDB Atlas.
 - A .NET backend project under `DimphoKeLesegoCateringBackend/`.
 
 The Node.js API is the deployment-ready path used by the root `package.json`, `netlify.toml`, `render.yaml`, and `netlify/functions/api.js` serverless entry point.
@@ -19,7 +19,7 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `n
 - Admin endpoints for contacts, bookings, and orders.
 - Booking and order status updates.
 - WhatsApp click-to-chat links for customer and business notifications.
-- SQLite persistence for simple local and hosted deployments.
+- MongoDB Atlas persistence for permanent hosted deployments.
 - Netlify and Render deployment configuration.
 
 ## Tech Stack
@@ -27,9 +27,7 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `n
 - Node.js
 - TypeScript
 - Express
-- TypeORM
-- SQLite
-- PostgreSQL for permanent production order storage
+- MongoDB Atlas for permanent production order storage
 - Nodemailer, currently used alongside notification/WhatsApp helpers
 - ASP.NET Core / EF Core SQLite for the alternate .NET backend
 
@@ -41,11 +39,11 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `n
 |   `-- functions/
 |       `-- api.js                      # Netlify serverless function entry point
 |-- src/                                # Node.js/TypeScript backend
-|   |-- entities/                       # TypeORM database models
+|   |-- entities/                       # API data models
 |   |-- routes/                         # Public and admin API routes
 |   |-- services/                       # Email/WhatsApp notification services
 |   |-- app.ts                          # Express app configuration
-|   |-- database.ts                     # SQLite + TypeORM setup
+|   |-- database.ts                     # MongoDB Atlas setup
 |   `-- index.ts                        # Local server entry point
 |-- DimphoKeLesegoCateringBackend/      # ASP.NET Core backend and static site
 |   |-- Controllers/                    # .NET API controllers
@@ -63,7 +61,7 @@ The Node.js API is the deployment-ready path used by the root `package.json`, `n
 
 - Node.js 18 or newer recommended.
 - npm.
-- SQLite support through the `sqlite3` npm package.
+- MongoDB Atlas connection string for deployed order storage.
 - Optional: .NET SDK compatible with the target framework in `DimphoKeLesegoCateringBackend/DimphoKeLesegoCateringBackend.csproj`.
 
 ## Getting Started
@@ -112,9 +110,9 @@ The application reads environment variables from `.env` using `dotenv`.
 | --- | --- | --- |
 | `NODE_ENV` | `development` | Runtime environment. |
 | `PORT` | `3000` | Local HTTP server port. |
-| `DB_PATH` | `data/dimpho_catering.sqlite` | Local SQLite database path. Used only when `DATABASE_URL` is not set. |
-| `DATABASE_URL` | none | Hosted Postgres connection string for permanent production storage. Required on Netlify. |
-| `DATABASE_SSL` | `true` | Set to `false` only if your database does not require SSL. |
+| `MONGODB_URI` | none | MongoDB Atlas connection string. Required on Netlify. |
+| `MONGODB_DB` | `dimpho_ke_lesego_catering` | MongoDB database name. |
+| `ADMIN_API_KEY` | none | Secret required for admin API routes on Netlify. |
 | `ADMIN_WHATSAPP_NUMBER` | From `.env.example` | Business WhatsApp number used for admin notification links. |
 | `WHATSAPP_NUMBER` | From `.env.example` | Public/business WhatsApp number used by the website. |
 | `SMTP_HOST` | `smtp.gmail.com` in example | SMTP host for email-capable notification flows. |
@@ -128,16 +126,15 @@ Do not commit `.env`, local database files, generated build folders, or runtime 
 
 ## Database
 
-The Node.js API uses TypeORM.
+The Node.js API stores data in MongoDB Atlas through the official MongoDB driver.
 
-- Local default database: SQLite at `data/dimpho_catering.sqlite`
-- Production database: hosted Postgres through `DATABASE_URL`
-- Schema synchronization is enabled in `src/database.ts`.
+- Production database: MongoDB Atlas through `MONGODB_URI`
+- Data is stored in separate collections for contacts, bookings, orders, coupons, blocked dates, and counters.
 - Initial coupons are seeded automatically when the coupon table is empty:
   - `WELCOME10`: 10% discount
   - `DKL50`: R50 fixed discount
 
-Because SQLite files are local runtime data, they are ignored by Git. On Netlify, `DATABASE_URL` is required so order, booking, contact, and coupon data is stored permanently.
+On Netlify, `MONGODB_URI` is required so order, booking, contact, and coupon data is stored permanently in MongoDB Atlas.
 
 ## Available Scripts
 
@@ -158,12 +155,6 @@ npm start
 ```
 
 Runs the compiled app from `dist/index.js`.
-
-```bash
-npm run typeorm
-```
-
-Runs the configured TypeORM CLI.
 
 ## Public Pages
 
@@ -230,7 +221,8 @@ Success response:
 ```json
 {
   "success": true,
-  "id": 1
+  "id": 1,
+  "accessToken": "private-booking-token"
 }
 ```
 
@@ -297,6 +289,7 @@ Success response includes an order reference, total, discount, and WhatsApp link
 {
   "success": true,
   "orderRef": "DKL-123456",
+  "accessToken": "private-order-token",
   "total": 700,
   "discount": 0,
   "customerWhatsappLink": "https://wa.me/...",
@@ -306,19 +299,19 @@ Success response includes an order reference, total, discount, and WhatsApp link
 
 #### `GET /api/bookings/lookup/:id`
 
-Returns a single booking request by numeric ID.
+Returns a single booking request by numeric ID only when the private `token` query parameter from the original booking response is provided.
 
 #### `GET /api/orders/lookup/:ref`
 
-Returns a single order by reference, for example:
+Returns a single order by reference only when the private `token` query parameter from the original order response is provided, for example:
 
 ```text
-/api/orders/lookup/DKL-123456
+/api/orders/lookup/DKL-123456?token=private-order-token
 ```
 
 ### Admin Endpoints
 
-These routes currently do not include authentication. Add authentication before exposing the admin API publicly.
+These routes require `ADMIN_API_KEY` on Netlify. Send it as an `x-admin-api-key` header or as a `Bearer` token.
 
 #### `GET /api/admin/contacts`
 
@@ -396,11 +389,13 @@ Netlify settings are defined in `netlify.toml`:
 - Publish directory: `DimphoKeLesegoCateringBackend/wwwroot`
 - Functions directory: `netlify/functions`
 - API redirect: `/api/*` to the Netlify function
-- Required database variable: `DATABASE_URL`
+- Required database variable: `MONGODB_URI`
+- Recommended database name variable: `MONGODB_DB`
+- Required admin variable: `ADMIN_API_KEY`
 
 Set production environment variables in the Netlify dashboard. Avoid relying on local `.env` files in production.
 
-Netlify's filesystem is temporary and read-only outside `/tmp`, so this app requires a hosted Postgres database in production. Good options include Supabase, Neon, Railway, Render Postgres, or any Postgres service that gives you a connection string.
+Netlify's filesystem is temporary and read-only outside `/tmp`, so this app requires MongoDB Atlas in production. Add `MONGODB_URI` in Netlify environment variables before using order, booking, contact, coupon, or admin APIs.
 
 ### Render
 
@@ -430,7 +425,7 @@ The .NET project uses EF Core with SQLite and creates the database on startup. I
 
 - Keep `.env` local and private.
 - Keep generated folders such as `dist/`, `bin/`, `obj/`, and `node_modules/` out of Git.
-- Keep runtime SQLite database files out of Git.
+- Keep runtime database files out of Git.
 - Keep runtime WhatsApp/email logs out of Git.
 - Update `.env.example` when new environment variables are introduced.
 - Add authentication before exposing admin routes in production.

@@ -3,12 +3,13 @@ import { AppDataSource } from '../database';
 import { ContactMessage, BookingRequest, Coupon, BlockedDate, Order, OrderItem } from '../entities';
 import { EmailService } from '../services/EmailService';
 import * as path from 'path';
+import { randomBytes } from 'crypto';
 
 const router = Router();
 const webRootPath = path.join(__dirname, '..', '..', 'DimphoKeLesegoCateringBackend', 'wwwroot');
 const emailService = new EmailService(webRootPath);
 
-const generateUniqueOrderRef = async (orderRepo: ReturnType<typeof AppDataSource.getRepository>): Promise<string> => {
+const generateUniqueOrderRef = async (orderRepo: { findOne: (options: any) => Promise<Order | null> }): Promise<string> => {
   for (let attempt = 0; attempt < 10; attempt++) {
     const orderRef = 'DKL-' + Math.floor(Math.random() * 900000 + 100000);
     const existingOrder = await orderRepo.findOne({ where: { orderRef } });
@@ -76,6 +77,7 @@ router.post('/bookings', async (req: Request, res: Response) => {
 
     const bookingRepo = AppDataSource.getRepository(BookingRequest);
     const booking = bookingRepo.create({
+      accessToken: randomBytes(24).toString('hex'),
       name,
       phone,
       email: email || '',
@@ -95,7 +97,7 @@ router.post('/bookings', async (req: Request, res: Response) => {
       console.error('Failed to send booking WhatsApp notification:', err);
     });
 
-    return res.status(200).json({ success: true, id: booking.id });
+    return res.status(200).json({ success: true, id: booking.id, accessToken: booking.accessToken });
   } catch (error) {
     console.error('Error creating booking:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -205,6 +207,7 @@ router.post('/orders', async (req: Request, res: Response) => {
 
     const order = new Order();
     order.orderRef = orderRef;
+    order.accessToken = randomBytes(24).toString('hex');
     order.name = name.trim();
     order.phone = phone.trim();
     order.email = email?.trim() || '';
@@ -238,6 +241,7 @@ router.post('/orders', async (req: Request, res: Response) => {
     return res.status(200).json({
       success: true,
       orderRef: order.orderRef,
+      accessToken: order.accessToken,
       total: order.totalAmount,
       discount: order.discountAmount,
       customerWhatsappLink: emailService.buildCustomerOrderLink(order),
@@ -253,13 +257,14 @@ router.post('/orders', async (req: Request, res: Response) => {
 router.get('/bookings/lookup/:id', async (req: Request, res: Response) => {
   try {
     const { id } = req.params;
+    const accessToken = typeof req.query.token === 'string' ? req.query.token : '';
     const bookingRepo = AppDataSource.getRepository(BookingRequest);
     
     const booking = await bookingRepo.findOne({
       where: { id: parseInt(id, 10) },
     });
 
-    if (!booking) {
+    if (!booking || !booking.accessToken || booking.accessToken !== accessToken) {
       return res.status(404).json({ message: 'Booking request not found' });
     }
 
@@ -275,11 +280,12 @@ router.get('/orders/lookup/:ref', async (req: Request, res: Response) => {
   try {
     const { ref } = req.params;
     const orderRepo = AppDataSource.getRepository(Order);
+    const accessToken = typeof req.query.token === 'string' ? req.query.token : '';
     const order = await orderRepo.findOne({
       where: { orderRef: ref.toUpperCase() },
     });
 
-    if (!order) {
+    if (!order || !order.accessToken || order.accessToken !== accessToken) {
       return res.status(404).json({ message: 'Order not found' });
     }
 

@@ -6,9 +6,7 @@ Node.js/Express backend for the Dimpho ke Lesego Catering website.
 
 - Node.js + Express
 - TypeScript
-- TypeORM
-- SQLite for local storage
-- Postgres for permanent production storage
+- MongoDB Atlas for permanent production storage
 - Free WhatsApp click-to-chat links
 
 ## Setup
@@ -32,9 +30,9 @@ Copy `.env.example` to `.env`.
 ```env
 NODE_ENV=development
 PORT=8080
-DB_PATH=data/dimpho_catering.sqlite
-DATABASE_URL=
-DATABASE_SSL=true
+MONGODB_URI=mongodb+srv://username:password@cluster.mongodb.net/?retryWrites=true&w=majority
+MONGODB_DB=dimpho_ke_lesego_catering
+ADMIN_API_KEY=change-this-long-random-secret
 ADMIN_WHATSAPP_NUMBER=+27796929591
 WHATSAPP_NUMBER=27796929591
 ```
@@ -46,10 +44,13 @@ WHATSAPP_NUMBER=27796929591
 - `GET /api/availability/blocked-dates`
 - `GET /api/coupons/validate`
 - `POST /api/orders`
-- `GET /api/bookings/lookup/:id`
+- `GET /api/bookings/lookup/:id?token=...`
+- `GET /api/orders/lookup/:ref?token=...`
 - `GET /api/admin/contacts`
 - `GET /api/admin/bookings`
 - `GET /api/admin/orders`
+
+Order and booking lookup endpoints require the private token returned when the customer creates the order or booking.
 
 ## WhatsApp
 
@@ -61,4 +62,4 @@ This is the free WhatsApp method. It opens WhatsApp with the order message fille
 
 See `netlify.toml`.
 
-Set `DATABASE_URL` on Netlify to a hosted Postgres database. Without it, the serverless API refuses to start because temporary filesystem storage is not permanent.
+Set `MONGODB_URI` on Netlify to a MongoDB Atlas connection string. Without it, the serverless API refuses to start because temporary filesystem storage is not permanent.

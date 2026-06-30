@@ -1,5 +1,4 @@
 import 'dotenv/config';
-import 'reflect-metadata';
 import express, { Express } from 'express';
 import cors from 'cors';
 import * as path from 'path';
@@ -44,4 +43,3 @@ export const ensureAppReady = async (): Promise<void> => {
 
   await databaseReady;
 };
-

@@ -46,7 +46,7 @@ We will contact you on WhatsApp to confirm delivery or collection details.
 ### 5. Updated Configuration Files
 - ✅ `.env` - Updated for SQLite and WhatsApp config
 - ✅ `.env.example` - Updated as template
-- ✅ `package.json` - Replaced mssql with sqlite3
+- ✅ `package.json` - Uses MongoDB Atlas for permanent hosted storage
 - ✅ `tsconfig.json` - Verified TypeScript setup
 
 ## 🚀 Backend Status

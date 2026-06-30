@@ -1187,13 +1187,18 @@ document.getElementById('bookingForm').addEventListener('submit', e => {
     return res.json();
   })
   .then(resData => {
+    const bookingToken = resData.accessToken || "";
+    try {
+      sessionStorage.setItem('dkl_booking_access_' + resData.id, bookingToken);
+    } catch (e) { /* storage unavailable */ }
+
     const confirmEl = document.getElementById('bookConfirm');
     confirmEl.innerHTML = "";
     confirmEl.appendChild(document.createTextNode("Thank you – your booking request has been received. Quote reference: " + resData.id + ". We'll contact you within 24 hours."));
     
     // Also add a print quote link
     const quoteLink = document.createElement('a');
-    quoteLink.href = "/quote.html?type=booking&id=" + resData.id;
+    quoteLink.href = "/quote.html?type=booking&id=" + resData.id + "&token=" + encodeURIComponent(bookingToken);
     quoteLink.target = "_blank";
     quoteLink.className = "btn btn-outline";
     quoteLink.style.marginTop = "12px";
@@ -1237,14 +1242,14 @@ document.getElementById('contactForm').addEventListener('submit', e => {
 // =========================================================
 // ---- Online Ordering: cart, drawer, checkout ----
 // =========================================================
-const CART_STORAGE_KEY = 'dkl_cart_v1';
+const CART_STORAGE_KEY = 'dkl_cart_session_v1';
 const WHATSAPP_NUMBER = '27796929591';
 
 let cart = loadCart();
 
 function loadCart(){
   try {
-    const raw = localStorage.getItem(CART_STORAGE_KEY);
+    const raw = sessionStorage.getItem(CART_STORAGE_KEY);
     const parsed = raw ? JSON.parse(raw) : [];
     return Array.isArray(parsed) ? parsed : [];
   } catch (e) {
@@ -1253,7 +1258,7 @@ function loadCart(){
 }
 
 function saveCart(){
-  try { localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch (e) { /* storage unavailable */ }
+  try { sessionStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart)); } catch (e) { /* storage unavailable */ }
 }
 
 function formatR(n){
@@ -1538,6 +1543,10 @@ orderForm.addEventListener('submit', function(e){
   })
   .then(resData => {
     const orderId = resData.orderRef;
+    const orderAccessToken = resData.accessToken || "";
+    try {
+      sessionStorage.setItem('dkl_order_access_' + orderId, orderAccessToken);
+    } catch (e) { /* storage unavailable */ }
     
     // Format customer object expected by buildOrderMessage
     const legacyCustomer = {
@@ -1562,7 +1571,7 @@ orderForm.addEventListener('submit', function(e){
     
     const printQuoteBtn = document.createElement('a');
     printQuoteBtn.id = 'orderPrintQuoteBtn';
-    printQuoteBtn.href = "/quote.html?type=order&ref=" + orderId;
+    printQuoteBtn.href = "/quote.html?type=order&ref=" + orderId + "&token=" + encodeURIComponent(orderAccessToken);
     printQuoteBtn.target = "_blank";
     printQuoteBtn.className = "btn btn-outline";
     printQuoteBtn.textContent = "View / Print Receipt";
@@ -1688,7 +1697,11 @@ if (orderLookupBtn) {
     resultEl.style.display = 'block';
     resultEl.innerHTML = '<p style="color: var(--ink-soft);">Searching...</p>';
 
-    fetch('/api/orders/lookup/' + ref)
+    let token = "";
+    try {
+      token = sessionStorage.getItem('dkl_order_access_' + ref.toUpperCase()) || "";
+    } catch (e) { /* storage unavailable */ }
+    fetch('/api/orders/lookup/' + ref + '?token=' + encodeURIComponent(token))
       .then(res => {
         if (!res.ok) throw new Error("Order not found or error occurred.");
         return res.json();
@@ -1703,7 +1716,7 @@ if (orderLookupBtn) {
           <p><strong>Items:</strong></p>
           <ul style="margin-left: 20px; margin-bottom: 10px;">${itemsHtml}</ul>
           <p><strong>Total:</strong> R${order.totalAmount}</p>
-          <a href="/quote.html?type=order&ref=${order.orderRef}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.75rem; margin-top: 10px; display: inline-block;">View Printable Receipt</a>
+          <a href="/quote.html?type=order&ref=${order.orderRef}&token=${encodeURIComponent(token)}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.75rem; margin-top: 10px; display: inline-block;">View Printable Receipt</a>
         `;
       })
       .catch(err => {
