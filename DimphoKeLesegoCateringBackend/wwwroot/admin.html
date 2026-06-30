@@ -725,7 +725,10 @@ async function viewOrder(id) {
         <strong style="font-size:1.1rem;color:var(--gold)">Total: R${o.totalAmount}</strong>
       </div>
       ${o.notes ? `<p style="margin-top:12px;font-size:0.84rem;color:var(--text-2)"><strong>Notes:</strong> ${esc(o.notes)}</p>` : ''}
-      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>
+      <div class="modal-actions">
+        <button class="btn btn-green" onclick="openWhatsAppModal('${o.phone}')">Send WhatsApp</button>
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      </div>
     `);
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -800,7 +803,10 @@ async function viewBooking(id) {
         <div><strong>Created:</strong> ${fmtDate(b.createdAt)}</div>
       </div>
       ${b.notes ? `<p style="margin-top:12px;font-size:0.84rem;color:var(--text-2)"><strong>Notes:</strong> ${esc(b.notes)}</p>` : ''}
-      <div class="modal-actions"><button class="btn btn-outline" onclick="closeModal()">Close</button></div>
+      <div class="modal-actions">
+        <button class="btn btn-green" onclick="openWhatsAppModal('${b.phone}')">Send WhatsApp</button>
+        <button class="btn btn-outline" onclick="closeModal()">Close</button>
+      </div>
     `);
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -972,6 +978,45 @@ async function unblockDate(date) {
     showToast(`${date} unblocked`, 'success');
     loadBlockedDates();
   } catch(e) { showToast(e.message, 'error'); }
+}
+
+// ============================
+// WHATSAPP MESSAGING
+// ============================
+function openWhatsAppModal(phone) {
+  showModal(`
+    <h3>Send WhatsApp Message</h3>
+    <div class="field" style="margin-bottom:12px;">
+      <label>To</label>
+      <input id="waPhone" value="${esc(phone)}" readonly style="background:var(--surface-3); cursor:not-allowed;">
+    </div>
+    <div class="field" style="margin-bottom:12px;">
+      <label>Message</label>
+      <textarea id="waMessage" rows="5" placeholder="Type your message here..."></textarea>
+    </div>
+    <div class="modal-actions">
+      <button class="btn btn-outline" onclick="closeModal()">Cancel</button>
+      <button class="btn btn-green" onclick="sendWhatsAppMessage()">Send Message</button>
+    </div>
+  `);
+}
+
+async function sendWhatsAppMessage() {
+  const phone = document.getElementById('waPhone').value.trim();
+  const message = document.getElementById('waMessage').value.trim();
+  
+  if (!message) {
+    showToast('Please enter a message.', 'error');
+    return;
+  }
+  
+  try {
+    const r = await apiPost('/send-whatsapp', { to: phone, message });
+    showToast(r.message || 'Message queued', 'success');
+    closeModal();
+  } catch(e) {
+    showToast(e.message || 'Failed to send message', 'error');
+  }
 }
 
 // ============================
