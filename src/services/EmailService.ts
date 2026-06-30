@@ -3,12 +3,13 @@ import * as path from 'path';
 import { Order } from '../entities/Order';
 import { BookingRequest } from '../entities/BookingRequest';
 import { ContactMessage } from '../entities/ContactMessage';
+import { isServerlessRuntime } from '../runtime';
 
 export class EmailService {
   private logsPath: string;
 
   constructor(webRootPath: string) {
-    this.logsPath = process.env.NETLIFY ? path.join('/tmp', 'whatsapp') : path.join(webRootPath, 'logs', 'whatsapp');
+    this.logsPath = isServerlessRuntime() ? path.join('/tmp', 'whatsapp') : path.join(webRootPath, 'logs', 'whatsapp');
     this.ensureLogsDirectoryExists();
   }
 

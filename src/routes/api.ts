@@ -8,6 +8,19 @@ const router = Router();
 const webRootPath = path.join(__dirname, '..', '..', 'DimphoKeLesegoCateringBackend', 'wwwroot');
 const emailService = new EmailService(webRootPath);
 
+const generateUniqueOrderRef = async (orderRepo: ReturnType<typeof AppDataSource.getRepository>): Promise<string> => {
+  for (let attempt = 0; attempt < 10; attempt++) {
+    const orderRef = 'DKL-' + Math.floor(Math.random() * 900000 + 100000);
+    const existingOrder = await orderRepo.findOne({ where: { orderRef } });
+
+    if (!existingOrder) {
+      return orderRef;
+    }
+  }
+
+  return `DKL-${Date.now()}`;
+};
+
 // POST /api/contacts
 router.post('/contacts', async (req: Request, res: Response) => {
   try {
@@ -186,7 +199,7 @@ router.post('/orders', async (req: Request, res: Response) => {
     }
 
     const totalAmount = originalAmount - discountAmount;
-    const orderRef = 'DKL-' + Math.floor(Math.random() * 900000 + 100000);
+    const orderRef = await generateUniqueOrderRef(orderRepo);
 
     const order = new Order();
     order.orderRef = orderRef;

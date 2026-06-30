@@ -1,7 +1,12 @@
 import { DataSource } from 'typeorm';
 import { ContactMessage, BookingRequest, Order, Coupon, BlockedDate } from './entities';
+import { isServerlessRuntime } from './runtime';
 
-const dbPath = process.env.DB_PATH || (process.env.NETLIFY ? '/tmp/dimpho_catering.sqlite' : 'data/dimpho_catering.sqlite');
+const configuredDbPath = process.env.DB_PATH;
+const dbPath =
+  isServerlessRuntime() && (!configuredDbPath || configuredDbPath.startsWith('data/'))
+    ? '/tmp/dimpho_catering.sqlite'
+    : configuredDbPath || 'data/dimpho_catering.sqlite';
 
 export const AppDataSource = new DataSource({
   type: 'sqlite',
