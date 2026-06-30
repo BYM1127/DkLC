@@ -1,0 +1,6 @@
+@DimphoKeLesegoCateringBackend_HostAddress = http://localhost:5010
+
+GET {{DimphoKeLesegoCateringBackend_HostAddress}}/weatherforecast/
+Accept: application/json
+
+###
