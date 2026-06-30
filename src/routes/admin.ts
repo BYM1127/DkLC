@@ -318,6 +318,257 @@ router.delete('/availability/block/:date', async (req: Request, res: Response) =
   }
 });
 
+// === STATS ===
+
+// GET /api/admin/stats
+router.get('/stats', async (req: Request, res: Response) => {
+  try {
+    const orderRepo = AppDataSource.getRepository(Order);
+    const bookingRepo = AppDataSource.getRepository(BookingRequest);
+    const contactRepo = AppDataSource.getRepository(ContactMessage);
+
+    const [orders, bookings, contacts] = await Promise.all([
+      orderRepo.find(),
+      bookingRepo.find(),
+      contactRepo.find(),
+    ]);
+
+    const totalRevenue = orders.reduce((sum, o) => sum + (o.totalAmount || 0), 0);
+    const pendingOrders = orders.filter(o => o.status === 'Pending').length;
+    const pendingBookings = bookings.filter(b => b.status === 'Pending').length;
+
+    return res.status(200).json({
+      totalOrders: orders.length,
+      totalBookings: bookings.length,
+      totalContacts: contacts.length,
+      totalRevenue: Math.round(totalRevenue * 100) / 100,
+      pendingOrders,
+      pendingBookings,
+    });
+  } catch (error) {
+    console.error('Error fetching stats:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// === QUOTE SENDING ===
+
+// POST /api/admin/orders/:id/send-quote
+router.post('/orders/:id/send-quote', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { message, items, totalAmount, channel } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ message: 'Message is required.' });
+    }
+
+    const orderRepo = AppDataSource.getRepository(Order);
+    const order = await orderRepo.findOne({ where: { id: parseInt(id, 10) } });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    // Build quote message text
+    let quoteText = `Hi ${order.name},\n\nThank you for your order (${order.orderRef}) with Dimpho ke Lesego Catering.\n\n${message}`;
+
+    if (items && items.length > 0) {
+      quoteText += '\n\nQuote Details:';
+      items.forEach((item: { description: string; amount: string }) => {
+        if (item.description) {
+          quoteText += `\n• ${item.description}: R${parseFloat(item.amount || '0').toFixed(2)}`;
+        }
+      });
+    }
+
+    if (totalAmount) {
+      quoteText += `\n\nTotal: R${parseFloat(totalAmount).toFixed(2)}`;
+    }
+
+    quoteText += '\n\nKind regards,\nDimpho ke Lesego Catering Services\n+27 79 692 9591';
+
+    // Build WhatsApp link
+    const whatsappLink = notificationService.buildWhatsAppLink(order.phone, quoteText);
+
+    // Send via email if channel is email and customer has email
+    if (channel === 'email' && order.email) {
+      try {
+        const { MailerConfig } = await import('../services/MailerConfig');
+        const htmlBody = `
+          <div style="font-family: 'Lora', serif; max-width: 600px; margin: 0 auto; background: #FBF1E2; border: 1.5px solid #E9D6B4; border-radius: 6px; padding: 40px;">
+            <h2 style="color: #5F0C0C; font-family: 'Playfair Display', serif; border-bottom: 2px solid #C2902F; padding-bottom: 10px;">Quote for Order ${order.orderRef}</h2>
+            <p>Dear ${order.name},</p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+            ${items && items.length > 0 ? `
+              <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                  <tr><th style="text-align: left; padding: 12px; background: #5F0C0C; color: #FFF8EF;">Description</th><th style="text-align: right; padding: 12px; background: #5F0C0C; color: #FFF8EF;">Amount</th></tr>
+                </thead>
+                <tbody>
+                  ${items.map((i: any) => i.description ? `<tr><td style="padding: 10px; border-bottom: 1px dotted #E9D6B4;">${i.description}</td><td style="padding: 10px; border-bottom: 1px dotted #E9D6B4; text-align: right;">R${parseFloat(i.amount || '0').toFixed(2)}</td></tr>` : '').join('')}
+                </tbody>
+              </table>` : ''}
+            ${totalAmount ? `<div style="font-size: 1.2em; font-weight: bold; color: #5F0C0C; text-align: right; margin-top: 15px; padding-top: 15px; border-top: 2px solid #C2902F;">Total: R${parseFloat(totalAmount).toFixed(2)}</div>` : ''}
+            <p style="margin-top: 20px;">Kind regards,<br><strong>Dimpho ke Lesego Catering Services</strong><br>+27 79 692 9591</p>
+          </div>`;
+        await MailerConfig.sendEmail(order.email, `Quote for Order ${order.orderRef}`, htmlBody, quoteText);
+        console.log(`[Admin] Quote email sent to ${order.email} for order ${order.orderRef}`);
+      } catch (emailErr) {
+        console.error('[Admin] Failed to send quote email:', emailErr);
+        // Don't fail the whole request — return the WhatsApp link as fallback
+      }
+    }
+
+    // Log the notification via WhatsApp service
+    await notificationService.sendWhatsAppMessage(order.phone, quoteText, `quote_order_${order.orderRef}`);
+
+    return res.status(200).json({
+      success: true,
+      whatsappLink,
+      message: channel === 'email' ? 'Quote sent via email.' : 'WhatsApp link generated.',
+    });
+  } catch (error) {
+    console.error('Error sending order quote:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// POST /api/admin/bookings/:id/send-quote
+router.post('/bookings/:id/send-quote', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { message, items, totalAmount, channel } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ message: 'Message is required.' });
+    }
+
+    const bookingRepo = AppDataSource.getRepository(BookingRequest);
+    const booking = await bookingRepo.findOne({ where: { id: parseInt(id, 10) } });
+
+    if (!booking) {
+      return res.status(404).json({ message: 'Booking not found.' });
+    }
+
+    let quoteText = `Hi ${booking.name},\n\nThank you for your booking enquiry with Dimpho ke Lesego Catering.\n\n${message}`;
+
+    if (items && items.length > 0) {
+      quoteText += '\n\nQuote Details:';
+      items.forEach((item: { description: string; amount: string }) => {
+        if (item.description) {
+          quoteText += `\n• ${item.description}: R${parseFloat(item.amount || '0').toFixed(2)}`;
+        }
+      });
+    }
+
+    if (totalAmount) {
+      quoteText += `\n\nTotal: R${parseFloat(totalAmount).toFixed(2)}`;
+    }
+
+    quoteText += '\n\nKind regards,\nDimpho ke Lesego Catering Services\n+27 79 692 9591';
+
+    const whatsappLink = notificationService.buildWhatsAppLink(booking.phone, quoteText);
+
+    if (channel === 'email' && booking.email) {
+      try {
+        const { MailerConfig } = await import('../services/MailerConfig');
+        const htmlBody = `
+          <div style="font-family: 'Lora', serif; max-width: 600px; margin: 0 auto; background: #FBF1E2; border: 1.5px solid #E9D6B4; border-radius: 6px; padding: 40px;">
+            <h2 style="color: #5F0C0C; font-family: 'Playfair Display', serif; border-bottom: 2px solid #C2902F; padding-bottom: 10px;">Booking Quote</h2>
+            <p>Dear ${booking.name},</p>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+            ${items && items.length > 0 ? `
+              <table style="width: 100%; border-collapse: collapse; margin: 20px 0;">
+                <thead>
+                  <tr><th style="text-align: left; padding: 12px; background: #5F0C0C; color: #FFF8EF;">Description</th><th style="text-align: right; padding: 12px; background: #5F0C0C; color: #FFF8EF;">Amount</th></tr>
+                </thead>
+                <tbody>
+                  ${items.map((i: any) => i.description ? `<tr><td style="padding: 10px; border-bottom: 1px dotted #E9D6B4;">${i.description}</td><td style="padding: 10px; border-bottom: 1px dotted #E9D6B4; text-align: right;">R${parseFloat(i.amount || '0').toFixed(2)}</td></tr>` : '').join('')}
+                </tbody>
+              </table>` : ''}
+            ${totalAmount ? `<div style="font-size: 1.2em; font-weight: bold; color: #5F0C0C; text-align: right; margin-top: 15px; padding-top: 15px; border-top: 2px solid #C2902F;">Total: R${parseFloat(totalAmount).toFixed(2)}</div>` : ''}
+            <p style="margin-top: 20px;">Kind regards,<br><strong>Dimpho ke Lesego Catering Services</strong><br>+27 79 692 9591</p>
+          </div>`;
+        await MailerConfig.sendEmail(booking.email, 'Booking Quote – Dimpho ke Lesego Catering', htmlBody, quoteText);
+        console.log(`[Admin] Quote email sent to ${booking.email} for booking #${booking.id}`);
+      } catch (emailErr) {
+        console.error('[Admin] Failed to send booking quote email:', emailErr);
+      }
+    }
+
+    await notificationService.sendWhatsAppMessage(booking.phone, quoteText, `quote_booking_${booking.id}`);
+
+    return res.status(200).json({
+      success: true,
+      whatsappLink,
+      message: channel === 'email' ? 'Quote sent via email.' : 'WhatsApp link generated.',
+    });
+  } catch (error) {
+    console.error('Error sending booking quote:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// POST /api/admin/contacts/:id/reply
+router.post('/contacts/:id/reply', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { message, channel } = req.body;
+
+    if (!message) {
+      return res.status(400).json({ message: 'Message is required.' });
+    }
+
+    const contactRepo = AppDataSource.getRepository(ContactMessage);
+    const contact = await contactRepo.findOne({ where: { id: parseInt(id, 10) } });
+
+    if (!contact) {
+      return res.status(404).json({ message: 'Contact not found.' });
+    }
+
+    const replyText = `Hi ${contact.name},\n\nThank you for reaching out to Dimpho ke Lesego Catering.\n\n${message}\n\nKind regards,\nDimpho ke Lesego Catering Services\n+27 79 692 9591`;
+
+    const whatsappLink = contact.phone
+      ? notificationService.buildWhatsAppLink(contact.phone, replyText)
+      : '';
+
+    if (channel === 'email' && contact.email) {
+      try {
+        const { MailerConfig } = await import('../services/MailerConfig');
+        const htmlBody = `
+          <div style="font-family: 'Lora', serif; max-width: 600px; margin: 0 auto; background: #FBF1E2; border: 1.5px solid #E9D6B4; border-radius: 6px; padding: 40px;">
+            <h2 style="color: #5F0C0C; font-family: 'Playfair Display', serif; border-bottom: 2px solid #C2902F; padding-bottom: 10px;">Reply from Dimpho ke Lesego Catering</h2>
+            <p>Dear ${contact.name},</p>
+            <p>Thank you for reaching out to us.</p>
+            <div style="background: #FFF8EF; border-left: 4px solid #C2902F; padding: 15px; margin: 20px 0;">
+              <p style="font-style: italic; color: #6B5A48;">Your message: "${contact.message}"</p>
+            </div>
+            <p>${message.replace(/\n/g, '<br>')}</p>
+            <p style="margin-top: 20px;">Kind regards,<br><strong>Dimpho ke Lesego Catering Services</strong><br>+27 79 692 9591</p>
+          </div>`;
+        await MailerConfig.sendEmail(contact.email, 'Reply from Dimpho ke Lesego Catering', htmlBody, replyText);
+        console.log(`[Admin] Reply email sent to ${contact.email} for contact #${contact.id}`);
+      } catch (emailErr) {
+        console.error('[Admin] Failed to send contact reply email:', emailErr);
+      }
+    }
+
+    if (contact.phone) {
+      await notificationService.sendWhatsAppMessage(contact.phone, replyText, `reply_contact_${contact.id}`);
+    }
+
+    return res.status(200).json({
+      success: true,
+      whatsappLink,
+      message: channel === 'email' ? 'Reply sent via email.' : 'WhatsApp link generated.',
+    });
+  } catch (error) {
+    console.error('Error sending contact reply:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // === WHATSAPP ===
 
 // POST /api/admin/send-whatsapp
@@ -349,3 +600,4 @@ router.post('/send-email', async (req: Request, res: Response) => {
 });
 
 export default router;
+
