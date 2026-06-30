@@ -1,5 +1,5 @@
 import { NavLink, Outlet, Navigate } from 'react-router-dom';
-import { useAdminAuth } from '../context/AdminAuthContext';
+import { useAdminAuth } from '../../context/AdminAuthContext';
 
 export const AdminLayout = () => {
   const { isAuthenticated, logout } = useAdminAuth();
