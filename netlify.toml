@@ -8,9 +8,11 @@
 
 [functions]
   node_bundler = "esbuild"
+  external_node_modules = ["sqlite3"]
   included_files = [
     "dist/**",
-    "DimphoKeLesegoCateringBackend/wwwroot/**"
+    "DimphoKeLesegoCateringBackend/wwwroot/**",
+    "node_modules/sqlite3/**"
   ]
 
 [[redirects]]

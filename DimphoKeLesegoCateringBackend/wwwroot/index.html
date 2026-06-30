@@ -1529,9 +1529,12 @@ orderForm.addEventListener('submit', function(e){
     headers: { 'Content-Type': 'application/json' },
     body: JSON.stringify(customer)
   })
-  .then(res => {
-    if (!res.ok) throw new Error("Failed to place order.");
-    return res.json();
+  .then(async res => {
+    const data = await res.json().catch(() => ({}));
+    if (!res.ok) {
+      throw new Error(data.message || "Failed to place order.");
+    }
+    return data;
   })
   .then(resData => {
     const orderId = resData.orderRef;
