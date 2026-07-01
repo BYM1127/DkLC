@@ -22,7 +22,11 @@ app.use('/api/admin', adminRoutes);
 setupSwagger(app);
 
 app.get('/', (_req, res) => {
-  res.sendFile(path.join(wwwrootPath, 'index.html'));
+  res.sendFile(path.join(wwwrootPath, 'index.html'), (err) => {
+    if (err) {
+      res.status(404).send('Frontend not built. Please run "npm run build" in the frontend directory.');
+    }
+  });
 });
 
 
@@ -31,7 +35,11 @@ app.use((req, res) => {
     return res.status(404).json({ message: 'Route not found' });
   }
 
-  return res.sendFile(path.join(wwwrootPath, 'index.html'));
+  res.sendFile(path.join(wwwrootPath, 'index.html'), (err) => {
+    if (err) {
+      res.status(404).send('Route not found');
+    }
+  });
 });
 
 let databaseReady: Promise<void> | null = null;
