@@ -1,6 +1,6 @@
 [build]
-  command = "npm install && npm run build"
-  publish = "DimphoKeLesegoCateringBackend/wwwroot"
+  command = "npm install && npm run build && cd frontend && npm install && npm run build"
+  publish = "frontend/dist"
   functions = "netlify/functions"
 
 [build.environment]
@@ -11,22 +11,12 @@
   external_node_modules = ["mongodb"]
   included_files = [
     "dist/**",
-    "DimphoKeLesegoCateringBackend/wwwroot/**"
+    "frontend/dist/**"
   ]
 
 [[redirects]]
   from = "/api/*"
   to = "/.netlify/functions/api/:splat"
-  status = 200
-
-[[redirects]]
-  from = "/admin"
-  to = "/admin.html"
-  status = 200
-
-[[redirects]]
-  from = "/admin.html"
-  to = "/admin.html"
   status = 200
 
 [[redirects]]
