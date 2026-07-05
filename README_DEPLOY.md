@@ -23,7 +23,7 @@
 ## Environment variables for production
 - NODE_ENV=production
 - PORT=10000
-- MONGODB_URI=your-mongodb-atlas-connection-string
+- MONGODB_URI=mongodb+srv://rainbow11272005_db_user:hhlUjTitzC75B7FQ@cluster1dimpho.jt5rd5s.mongodb.net/?appName=Cluster1Dimpho
 - MONGODB_DB=dimpho_ke_lesego_catering
 - ADMIN_API_KEY=change-this-long-random-secret
 - WHATSAPP_NUMBER=27796929591
