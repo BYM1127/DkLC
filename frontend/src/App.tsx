@@ -8,6 +8,7 @@ import { Menu } from './pages/Menu';
 import { Gallery } from './pages/Gallery';
 import { Book } from './pages/Book';
 import { Order } from './pages/Order';
+import { Contact } from './pages/Contact';
 import { CartProvider } from './context/CartContext';
 import { CartDrawer } from './components/CartDrawer';
 import { AdminAuthProvider } from './context/AdminAuthContext';
@@ -50,6 +51,7 @@ function App() {
           <Route path="/gallery" element={<PublicLayout><Gallery /></PublicLayout>} />
           <Route path="/book" element={<PublicLayout><Book /></PublicLayout>} />
           <Route path="/order" element={<PublicLayout><Order /></PublicLayout>} />
+          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
 
           {/* Admin routes — own layout, no public Navbar/Footer */}
           <Route path="/admin/login" element={

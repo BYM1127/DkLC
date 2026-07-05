@@ -15,12 +15,20 @@ const bookingSchema = z.object({
 
 export const Book = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
+  const [submitting, setSubmitting] = useState(false);
+
+  const minimumDate = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setErrors({});
     const formData = new FormData(e.target);
     const dataObj = Object.fromEntries(formData.entries());
+
+    if (dataObj.date && String(dataObj.date) < minimumDate) {
+      setErrors({ date: 'Please allow at least 72 hours notice for bookings' });
+      return;
+    }
 
     const result = bookingSchema.safeParse(dataObj);
     if (!result.success) {
@@ -44,6 +52,7 @@ export const Book = () => {
       notes: dataObj.notes
     };
 
+    setSubmitting(true);
     try {
       const response = await fetch('/api/bookings', {
         method: 'POST',
@@ -55,10 +64,13 @@ export const Book = () => {
         if (confirmMsg) confirmMsg.style.display = 'block';
         e.target.reset();
       } else {
-        alert('Failed to submit booking request.');
+        const err = await response.json().catch(() => null);
+        alert(err?.message || 'Failed to submit booking request. Please WhatsApp us at +27 79 692 9591 if this continues.');
       }
     } catch (error) {
-      alert('An error occurred. Please try again.');
+      alert('We could not submit your booking right now. Please WhatsApp us at +27 79 692 9591.');
+    } finally {
+      setSubmitting(false);
     }
   };
 
@@ -100,7 +112,7 @@ export const Book = () => {
                 <option>Family Gathering</option><option>Corporate Event</option><option>Community Function</option><option>Other</option>
               </select>
             </div>
-            <div className="field"><label htmlFor="bk-date">Event date</label><input id="bk-date" name="date" type="date" /></div>
+            <div className="field"><label htmlFor="bk-date">Event date</label><input id="bk-date" name="date" type="date" min={minimumDate} />{errors.date && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.date}</span>}</div>
 
             <div className="field"><label htmlFor="bk-guests">Estimated guests</label><input id="bk-guests" name="guests" type="number" min="1" placeholder="e.g. 80" /></div>
             <div className="field"><label htmlFor="bk-package">Preferred package</label>
@@ -122,7 +134,7 @@ export const Book = () => {
               <textarea id="bk-notes" name="notes" rows={4} placeholder="Dietary needs, venue address, theme, special requests..."></textarea>
             </div>
           </div>
-          <button type="submit" className="btn btn-primary" style={{ marginTop: '22px', width: '100%', justifyContent: 'center' }}>Send Booking Request</button>
+          <button type="submit" className="btn btn-primary" style={{ marginTop: '22px', width: '100%', justifyContent: 'center' }} disabled={submitting}>{submitting ? 'Sending Request...' : 'Send Booking Request'}</button>
           <div className="confirm-msg" id="bookConfirm">Thank you — your booking request has been received. We'll contact you within 24 hours at the phone or email you provided.</div>
         </form>
         <p className="field-help" style={{ marginTop: '18px' }}>Prefer to talk it through? Call or WhatsApp <strong>+27 79 692 9591</strong> or email <strong>dimphokelesego@gmail.com</strong>.</p>

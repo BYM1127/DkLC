@@ -44,10 +44,27 @@ app.use((req, res) => {
 
 let databaseReady: Promise<void> | null = null;
 
-export const ensureAppReady = async (): Promise<void> => {
+const getAppReadyTimeoutMs = (timeoutMs?: number): number => {
+  const configuredTimeout = timeoutMs ?? Number(process.env.APP_READY_TIMEOUT_MS || 9000);
+  return Number.isFinite(configuredTimeout) && configuredTimeout > 0 ? configuredTimeout : 9000;
+};
+
+export const ensureAppReady = async (timeoutMs?: number): Promise<void> => {
+  const readyTimeoutMs = getAppReadyTimeoutMs(timeoutMs);
+
   if (!databaseReady) {
-    databaseReady = initializeDatabase();
+    databaseReady = initializeDatabase().catch(error => {
+      databaseReady = null;
+      throw error;
+    });
   }
 
-  await databaseReady;
+  await Promise.race([
+    databaseReady,
+    new Promise<never>((_resolve, reject) => {
+      setTimeout(() => {
+        reject(new Error(`Database startup timed out after ${readyTimeoutMs}ms. Check MONGODB_URI and MongoDB Atlas Network Access.`));
+      }, readyTimeoutMs);
+    }),
+  ]);
 };

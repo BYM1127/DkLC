@@ -17,7 +17,10 @@ const orderSchema = z.object({
 export const Order = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [fulfilmentType, setFulfilmentType] = useState('Delivery');
   const { cartItems, cartTotal, updateQuantity, removeFromCart } = useCart();
+
+  const minimumDate = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
   const handleSubmit = async (e: any) => {
     e.preventDefault();
@@ -30,6 +33,17 @@ export const Order = () => {
 
     const formData = new FormData(e.target);
     const dataObj = Object.fromEntries(formData.entries());
+    dataObj.fulfil = fulfilmentType;
+
+    if (fulfilmentType === 'Delivery' && !String(dataObj.address || '').trim()) {
+      setErrors({ address: 'Delivery address is required for delivery orders' });
+      return;
+    }
+
+    if (dataObj.date && String(dataObj.date) < minimumDate) {
+      setErrors({ date: 'Please allow at least 72 hours notice for orders' });
+      return;
+    }
 
     const result = orderSchema.safeParse(dataObj);
     if (!result.success) {
@@ -88,11 +102,11 @@ export const Order = () => {
         e.target.reset();
       } else {
         const err = await response.json().catch(() => null);
-        alert(err?.message || 'Failed to submit order.');
+        alert(err?.message || `Failed to submit order. Please WhatsApp us at +27 79 692 9591 if this continues.`);
       }
     } catch (error) {
       console.error('Order submission error:', error);
-      alert('An error occurred. Please try again.');
+      alert('We could not submit your order right now. Please WhatsApp us at +27 79 692 9591.');
     } finally {
       setSubmitting(false);
     }
@@ -178,17 +192,18 @@ export const Order = () => {
               <div className="field full">
                 <label>Delivery or collection?</label>
                 <div className="radio-row">
-                  <label className="radio-opt"><input type="radio" name="fulfil" value="Delivery" defaultChecked /> Delivery to venue</label>
-                  <label className="radio-opt"><input type="radio" name="fulfil" value="Collection" /> Collection from Phaphadi</label>
+                  <label className="radio-opt"><input type="radio" name="fulfil" value="Delivery" checked={fulfilmentType === 'Delivery'} onChange={() => setFulfilmentType('Delivery')} /> Delivery to venue</label>
+                  <label className="radio-opt"><input type="radio" name="fulfil" value="Collection" checked={fulfilmentType === 'Collection'} onChange={() => setFulfilmentType('Collection')} /> Collection from Phaphadi</label>
                 </div>
               </div>
 
-              <div className="field full" id="orderAddressField">
+              {fulfilmentType === 'Delivery' && <div className="field full" id="orderAddressField">
                 <label htmlFor="od-address">Delivery address</label>
                 <input id="od-address" name="address" type="text" placeholder="Street, suburb, town" />
-              </div>
+                {errors.address && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.address}</span>}
+              </div>}
 
-              <div className="field"><label htmlFor="od-date">Needed by (date)</label><input id="od-date" name="date" type="date" /></div>
+              <div className="field"><label htmlFor="od-date">Needed by (date)</label><input id="od-date" name="date" type="date" min={minimumDate} />{errors.date && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.date}</span>}</div>
               <div className="field"><label htmlFor="od-time">Preferred time</label><input id="od-time" name="time" type="time" /></div>
 
               <div className="field full"><label htmlFor="od-notes">Anything else we should know?</label>

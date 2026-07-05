@@ -17,7 +17,9 @@ const expressHandler = serverless(app, {
 
 exports.handler = async (event, context) => {
   try {
-    await ensureAppReady();
+    context.callbackWaitsForEmptyEventLoop = false;
+    const readyTimeoutMs = Math.min(Number(process.env.APP_READY_TIMEOUT_MS || 9000), 25000);
+    await ensureAppReady(readyTimeoutMs);
     return expressHandler(event, context);
   } catch (error) {
     console.error('Failed to prepare app:', error);

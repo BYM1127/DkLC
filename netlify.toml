@@ -6,8 +6,6 @@
 [build.environment]
   NODE_VERSION = "20"
   SECRETS_SCAN_ENABLED = "false"
-  MONGODB_URI = "mongodb+srv://rainbow11272005_db_user:hhlUjTitzC75B7FQ@cluster1dimpho.jt5rd5s.mongodb.net/?appName=Cluster1Dimpho"
-  MONGODB_DB = "dimpho_ke_lesego_catering"
 
 [functions]
   node_bundler = "esbuild"
