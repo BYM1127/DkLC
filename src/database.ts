@@ -136,7 +136,13 @@ export const AppDataSource = {
     }
 
     if (!client) {
-      client = new MongoClient(mongoUri);
+      client = new MongoClient(mongoUri, {
+        tls: true,
+        tlsAllowInvalidCertificates: false,
+        serverSelectionTimeoutMS: 30000,
+        connectTimeoutMS: 30000,
+        socketTimeoutMS: 30000,
+      });
       await client.connect();
       database = client.db(mongoDbName);
       databaseReady = true;

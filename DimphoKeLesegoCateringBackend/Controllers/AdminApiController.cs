@@ -3,6 +3,7 @@ using System.Linq;
 using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using DimphoKeLesegoCateringBackend.Data;
 using DimphoKeLesegoCateringBackend.Models;
 
@@ -10,13 +11,47 @@ namespace DimphoKeLesegoCateringBackend.Controllers
 {
     [ApiController]
     [Route("api/admin")]
-    public class AdminApiController : ControllerBase
+    public class AdminApiController : ControllerBase, Microsoft.AspNetCore.Mvc.Filters.IActionFilter
     {
         private readonly CateringDbContext _context;
+        private readonly IConfiguration _configuration;
 
-        public AdminApiController(CateringDbContext context)
+        public AdminApiController(CateringDbContext context, IConfiguration configuration)
         {
             _context = context;
+            _configuration = configuration;
+        }
+
+        [NonAction]
+        public void OnActionExecuting(Microsoft.AspNetCore.Mvc.Filters.ActionExecutingContext context)
+        {
+            var expectedKey = _configuration["ADMIN_API_KEY"];
+            if (!string.IsNullOrEmpty(expectedKey))
+            {
+                if (!context.HttpContext.Request.Headers.TryGetValue("x-admin-api-key", out var suppliedKey) && 
+                    !context.HttpContext.Request.Headers.TryGetValue("Authorization", out suppliedKey))
+                {
+                    context.Result = new UnauthorizedObjectResult(new { message = "Unauthorized: API Key missing" });
+                    return;
+                }
+
+                var keyString = suppliedKey.ToString();
+                if (keyString.StartsWith("Bearer ", StringComparison.OrdinalIgnoreCase))
+                {
+                    keyString = keyString.Substring(7);
+                }
+
+                if (keyString != expectedKey)
+                {
+                    context.Result = new UnauthorizedObjectResult(new { message = "Unauthorized: Invalid API Key" });
+                    return;
+                }
+            }
+        }
+
+        [NonAction]
+        public void OnActionExecuted(Microsoft.AspNetCore.Mvc.Filters.ActionExecutedContext context)
+        {
         }
 
         // GET /api/admin/contacts
