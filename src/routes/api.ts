@@ -259,16 +259,34 @@ router.get('/bookings/lookup/:id', async (req: Request, res: Response) => {
     const { id } = req.params;
     const accessToken = typeof req.query.token === 'string' ? req.query.token : '';
     const bookingRepo = AppDataSource.getRepository(BookingRequest);
-    
+
     const booking = await bookingRepo.findOne({
       where: { id: parseInt(id, 10) },
     });
 
-    if (!booking || !booking.accessToken || booking.accessToken !== accessToken) {
+    if (!booking) {
       return res.status(404).json({ message: 'Booking request not found' });
     }
 
-    return res.status(200).json(booking);
+    // If correct token provided, return full details
+    if (booking.accessToken && booking.accessToken === accessToken) {
+      return res.status(200).json(booking);
+    }
+
+    // No or invalid token: return limited public status info only
+    return res.status(200).json({
+      id: booking.id,
+      name: booking.name.split(' ')[0] + (booking.name.includes(' ') ? ' ' + booking.name.split(' ').slice(1).map((w: string) => w[0] + '***').join(' ') : ''),
+      status: booking.status,
+      eventDate: booking.eventDate,
+      eventType: booking.eventType,
+      preferredPackage: booking.preferredPackage,
+      estimatedGuests: booking.estimatedGuests,
+      fulfilmentType: booking.fulfilmentType,
+      notes: booking.notes,
+      createdAt: booking.createdAt,
+      limited: true,
+    });
   } catch (error) {
     console.error('Error fetching booking:', error);
     return res.status(500).json({ message: 'Internal server error' });
@@ -285,34 +303,51 @@ router.get('/orders/lookup/:ref', async (req: Request, res: Response) => {
       where: { orderRef: ref.toUpperCase() },
     });
 
-    if (!order || !order.accessToken || order.accessToken !== accessToken) {
+    if (!order) {
       return res.status(404).json({ message: 'Order not found' });
     }
 
+    const hasValidToken = order.accessToken && order.accessToken === accessToken;
+
+    // If correct token provided, return full details including items
+    if (hasValidToken) {
+      return res.status(200).json({
+        id: order.id,
+        orderRef: order.orderRef,
+        name: order.name,
+        phone: order.phone,
+        email: order.email,
+        fulfilmentType: order.fulfilmentType,
+        deliveryAddress: order.deliveryAddress,
+        dateNeeded: order.dateNeeded,
+        timeNeeded: order.timeNeeded,
+        notes: order.notes,
+        originalAmount: order.originalAmount,
+        discountAmount: order.discountAmount,
+        totalAmount: order.totalAmount,
+        couponApplied: order.couponApplied,
+        status: order.status,
+        createdAt: order.createdAt,
+        items: order.orderItems.map(i => ({
+          itemId: i.itemId,
+          name: i.name,
+          price: i.price,
+          quantity: i.quantity,
+          isPackage: i.isPackage,
+        })),
+      });
+    }
+
+    // No or invalid token: return limited public status info only
     return res.status(200).json({
-      id: order.id,
       orderRef: order.orderRef,
-      name: order.name,
-      phone: order.phone,
-      email: order.email,
-      fulfilmentType: order.fulfilmentType,
-      deliveryAddress: order.deliveryAddress,
-      dateNeeded: order.dateNeeded,
-      timeNeeded: order.timeNeeded,
-      notes: order.notes,
-      originalAmount: order.originalAmount,
-      discountAmount: order.discountAmount,
-      totalAmount: order.totalAmount,
-      couponApplied: order.couponApplied,
+      name: order.name.split(' ')[0],
       status: order.status,
+      totalAmount: order.totalAmount,
+      dateNeeded: order.dateNeeded,
+      fulfilmentType: order.fulfilmentType,
       createdAt: order.createdAt,
-      items: order.orderItems.map(i => ({
-        itemId: i.itemId,
-        name: i.name,
-        price: i.price,
-        quantity: i.quantity,
-        isPackage: i.isPackage,
-      })),
+      limited: true,
     });
   } catch (error) {
     console.error('Error fetching order:', error);

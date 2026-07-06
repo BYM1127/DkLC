@@ -2,13 +2,17 @@ import 'dotenv/config';
 import express, { Express } from 'express';
 import cors from 'cors';
 import * as path from 'path';
-import { initializeDatabase } from './database';
+import { initializeDatabase, AppDataSource } from './database';
 import apiRoutes from './routes/api';
 import adminRoutes from './routes/admin';
 
 export const app: Express = express();
 
-app.use(cors());
+app.use(cors({
+  origin: process.env.CORS_ORIGIN || '*',
+  methods: ['GET', 'POST', 'PUT', 'DELETE', 'OPTIONS'],
+  allowedHeaders: ['Content-Type', 'Authorization', 'x-admin-api-key'],
+}));
 app.use(express.json());
 app.use(express.urlencoded({ extended: true }));
 
@@ -17,6 +21,15 @@ app.use(express.static(wwwrootPath));
 
 app.use('/api', apiRoutes);
 app.use('/api/admin', adminRoutes);
+
+// Health-check / DB status endpoint
+app.get('/api/health', (_req, res) => {
+  res.status(200).json({
+    status: 'ok',
+    database: AppDataSource.isInitialized ? 'connected' : 'disconnected',
+    timestamp: new Date().toISOString(),
+  });
+});
 
 app.get('/', (_req, res) => {
   res.sendFile(path.join(wwwrootPath, 'index.html'));

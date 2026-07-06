@@ -242,12 +242,9 @@ router.delete('/coupons/:id', async (req: Request, res: Response) => {
       return res.status(404).json({ message: 'Coupon not found.' });
     }
 
-    await couponRepo.save({ ...coupon, id: undefined as any });
-    // For MongoDB-based repo, we need to delete differently
-    // The MongoRepository doesn't have a delete method, so we work around it
-    const collection = (couponRepo as any).collection;
-    if (collection) {
-      await collection.deleteOne({ id: parseInt(id, 10) });
+    const deleted = await couponRepo.delete({ id: parseInt(id, 10) });
+    if (!deleted) {
+      return res.status(500).json({ message: 'Failed to delete coupon.' });
     }
 
     return res.status(200).json({ success: true });
@@ -306,9 +303,9 @@ router.delete('/availability/block/:date', async (req: Request, res: Response) =
       return res.status(404).json({ message: 'Blocked date not found.' });
     }
 
-    const collection = (blockedDateRepo as any).collection;
-    if (collection) {
-      await collection.deleteOne({ date });
+    const deleted = await blockedDateRepo.delete({ date });
+    if (!deleted) {
+      return res.status(500).json({ message: 'Failed to unblock date.' });
     }
 
     return res.status(200).json({ success: true });

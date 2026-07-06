@@ -1298,12 +1298,8 @@ function renderCart(){
   const subtotal = cartTotal();
   let discount = 0;
   if (currentCoupon) {
-    if (currentCoupon.type === "Percentage") {
-      discount = subtotal * (currentCoupon.value / 100);
-    } else if (currentCoupon.type === "Fixed") {
-      discount = currentCoupon.value;
-    }
-    discount = Math.min(discount, subtotal);
+    // Use the server-validated discount amount directly
+    discount = Math.min(currentCoupon.discount || 0, subtotal);
   }
   const total = subtotal - discount;
 
@@ -1593,11 +1589,11 @@ if (applyCouponBtn) {
         if (resData.valid) {
           currentCoupon = {
             code: resData.code,
-            type: resData.discount === 50 ? "Fixed" : "Percentage",
-            value: resData.discount === 50 ? 50 : 10
+            discount: resData.discount,
+            newTotal: resData.newTotal,
           };
           couponMsg.style.color = '#27521c';
-          couponMsg.textContent = `Coupon ${resData.code} applied! Saved R${resData.discount}`;
+          couponMsg.textContent = `Coupon ${resData.code} applied! You save R${resData.discount.toFixed(2)}`;
           renderCart();
         } else {
           currentCoupon = null;
@@ -1631,21 +1627,35 @@ if (orderLookupBtn) {
     } catch (e) { /* storage unavailable */ }
     fetch('/api/orders/lookup/' + ref + '?token=' + encodeURIComponent(token))
       .then(res => {
-        if (!res.ok) throw new Error("Order not found or error occurred.");
+        if (!res.ok) throw new Error("Order not found. Please check the reference number.");
         return res.json();
       })
       .then(order => {
-        let itemsHtml = order.items.map(i => `<li>${i.quantity} x ${i.name}</li>`).join('');
-        resultEl.innerHTML = `
-          <h4 style="color: var(--burgundy); margin-bottom: 8px; font-family: var(--display);">Order Details for ${order.orderRef}</h4>
-          <p><strong>Customer Name:</strong> ${order.name}</p>
-          <p><strong>Status:</strong> <span class="chip gold" style="font-size: 0.8rem; padding: 3px 8px; margin-left: 5px; color: var(--burgundy-soft); border-color: var(--gold-pale);">${order.status}</span></p>
-          <p><strong>Needed By:</strong> ${order.dateNeeded} ${order.timeNeeded}</p>
-          <p><strong>Items:</strong></p>
-          <ul style="margin-left: 20px; margin-bottom: 10px;">${itemsHtml}</ul>
-          <p><strong>Total:</strong> R${order.totalAmount}</p>
-          <a href="/quote.html?type=order&ref=${order.orderRef}&token=${encodeURIComponent(token)}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.75rem; margin-top: 10px; display: inline-block;">View Printable Receipt</a>
-        `;
+        if (order.limited) {
+          // No session token — show limited public status only
+          resultEl.innerHTML = `
+            <h4 style="color: var(--burgundy); margin-bottom: 8px; font-family: var(--display);">Order ${order.orderRef}</h4>
+            <p><strong>Customer:</strong> ${order.name}</p>
+            <p><strong>Status:</strong> <span class="chip gold" style="font-size: 0.8rem; padding: 3px 8px; margin-left: 5px; color: var(--burgundy-soft); border-color: var(--gold-pale);">${order.status}</span></p>
+            <p><strong>Total:</strong> R${order.totalAmount}</p>
+            <p><strong>Needed By:</strong> ${order.dateNeeded || 'TBD'}</p>
+            <p><strong>Fulfilment:</strong> ${order.fulfilmentType}</p>
+            <p style="margin-top: 10px; font-size: 0.82rem; color: var(--ink-soft); font-style: italic;">Full receipt details are available only in the original session where the order was placed.</p>
+          `;
+        } else {
+          // Full details available
+          let itemsHtml = (order.items || []).map(i => `<li>${i.quantity} x ${i.name}</li>`).join('');
+          resultEl.innerHTML = `
+            <h4 style="color: var(--burgundy); margin-bottom: 8px; font-family: var(--display);">Order Details for ${order.orderRef}</h4>
+            <p><strong>Customer Name:</strong> ${order.name}</p>
+            <p><strong>Status:</strong> <span class="chip gold" style="font-size: 0.8rem; padding: 3px 8px; margin-left: 5px; color: var(--burgundy-soft); border-color: var(--gold-pale);">${order.status}</span></p>
+            <p><strong>Needed By:</strong> ${order.dateNeeded || 'TBD'} ${order.timeNeeded || ''}</p>
+            <p><strong>Items:</strong></p>
+            <ul style="margin-left: 20px; margin-bottom: 10px;">${itemsHtml}</ul>
+            <p><strong>Total:</strong> R${order.totalAmount}</p>
+            <a href="/quote.html?type=order&ref=${order.orderRef}&token=${encodeURIComponent(token)}" target="_blank" class="btn btn-outline" style="padding: 6px 12px; font-size: 0.75rem; margin-top: 10px; display: inline-block;">View Printable Receipt</a>
+          `;
+        }
       })
       .catch(err => {
         resultEl.innerHTML = `<p style="color: var(--burgundy-soft); font-weight: 600;">${err.message}</p>`;

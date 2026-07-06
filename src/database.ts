@@ -48,6 +48,11 @@ class MongoRepository<T extends { id?: number; createdAt?: Date }> {
     return doc ? this.hydrate(doc) : null;
   }
 
+  async delete(where: Partial<T>): Promise<boolean> {
+    const result = await this.collection.deleteOne(this.toFilter(where));
+    return result.deletedCount > 0;
+  }
+
   async save(entity: T | T[]): Promise<T | T[]> {
     if (Array.isArray(entity)) {
       const saved: T[] = [];

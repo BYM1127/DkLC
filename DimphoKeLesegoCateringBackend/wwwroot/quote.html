@@ -1,4 +1,4 @@
-﻿<!DOCTYPE html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
   <meta charset="UTF-8">
@@ -300,17 +300,6 @@
       document.getElementById('docRefLabel').textContent = "Quote Ref: DKL-B" + id.padStart(4, '0');
       document.getElementById('evtTimeRow').style.display = 'none';
 
-      // Since the admin endpoint listing bookings handles requests, we can query a public booking-details endpoint 
-      // or implement booking retrieval directly. In our ApiController we can fetch booking status. But wait, 
-      // can we just retrieve the booking details?
-      // Let's check: did we add a GET `/api/bookings/{id}` endpoint?
-      // In the ApiController.cs, we have POST bookings, GET availability, POST orders, GET lookup, GET validate.
-      // Wait, we didn't add a GET `/api/bookings/{id}` endpoint to our ApiController!
-      // Let's add it so that the user can query it!
-      // Oh wait, since the user is in Visual Studio or running locally, having an API endpoint to lookup a booking quote is essential.
-      // Let's check: yes, we should add `GET /api/bookings/lookup/{id}` to ApiController.cs, or just fetch the booking.
-      // Let's implement the Javascript call here: `/api/bookings/lookup/` + id.
-      // Let's write the Javascript fetch code first, then add the endpoint to ApiController.
       fetch('/api/bookings/lookup/' + id + '?token=' + encodeURIComponent(token))
         .then(res => {
           if (!res.ok) throw new Error("Booking request not found");
@@ -318,7 +307,7 @@
         })
         .then(b => {
           document.getElementById('cliName').textContent = b.name;
-          document.getElementById('cliPhone').textContent = b.phone;
+          document.getElementById('cliPhone').textContent = b.phone || 'N/A';
           document.getElementById('cliEmail').textContent = b.email || "N/A";
           document.getElementById('evtDate').textContent = b.eventDate || "N/A";
           document.getElementById('evtType').textContent = b.eventType;
@@ -326,27 +315,28 @@
           
           document.getElementById('bookingSummary').style.display = 'block';
           document.getElementById('bookPkg').textContent = b.preferredPackage;
-          document.getElementById('bookGuests').textContent = b.estimatedGuests;
+          document.getElementById('bookGuests').textContent = b.estimatedGuests || 'TBD';
           if (b.notes) {
             document.getElementById('bookNotes').innerHTML = "<strong>Special Requests:</strong> " + b.notes;
           }
 
           // Calculate estimated quote totals dynamically based on package
           // Packages are: Bronze Feast (R120), Silver Feast (R165), Gold Feast (R220)
+          const guests = parseInt(b.estimatedGuests, 10) || 0;
           let rate = 0;
           if (b.preferredPackage.includes("Bronze")) rate = 120;
           else if (b.preferredPackage.includes("Silver")) rate = 165;
           else if (b.preferredPackage.includes("Gold")) rate = 220;
 
-          if (rate > 0) {
+          if (rate > 0 && guests > 0) {
             document.getElementById('itemsTable').style.display = 'table';
             const body = document.getElementById('itemsBody');
-            const subtotal = rate * b.estimatedGuests;
+            const subtotal = rate * guests;
             body.innerHTML = `
               <tr>
                 <td>Catering Service Package - ${b.preferredPackage}</td>
                 <td class="num">${formatR(rate)}/guest</td>
-                <td class="num">${b.estimatedGuests}</td>
+                <td class="num">${guests}</td>
                 <td class="num">${formatR(subtotal)}</td>
               </tr>
             `;
@@ -354,10 +344,10 @@
             document.getElementById('subtotalRow').style.display = 'none'; // Only show grand total for package estimate
             document.getElementById('grandTotalVal').textContent = formatR(subtotal);
           } else {
-            // Custom packages
+            // Custom packages or guests not specified
             document.getElementById('totalsBlock').style.display = 'block';
             document.getElementById('subtotalRow').style.display = 'none';
-            document.getElementById('grandTotalVal').textContent = "TBD (Custom Menu)";
+            document.getElementById('grandTotalVal').textContent = guests === 0 ? "TBD (Guest count not specified)" : "TBD (Custom Menu)";
           }
         })
         .catch(err => {
