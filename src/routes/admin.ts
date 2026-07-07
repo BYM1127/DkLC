@@ -1,5 +1,6 @@
 import { Router, Request, Response } from 'express';
 import * as path from 'path';
+import * as crypto from 'crypto';
 import { AppDataSource } from '../database';
 import { ContactMessage, BookingRequest, Order, Coupon, BlockedDate } from '../entities';
 import { EmailService } from '../services/EmailService';
@@ -9,24 +10,56 @@ const router = Router();
 const webRootPath = path.join(__dirname, '..', '..', 'DimphoKeLesegoCateringBackend', 'wwwroot');
 const notificationService = new EmailService(webRootPath);
 
-// Auth middleware
-router.use((req, res, next) => {
-  const expectedKey = process.env.ADMIN_API_KEY;
+// In-memory session token store (cleared on server restart — intentional for simplicity)
+const activeSessions = new Set<string>();
 
-  if (!expectedKey && isServerlessRuntime()) {
-    return res.status(503).json({ message: 'ADMIN_API_KEY is required before admin routes can be used.' });
+// ── POST /api/admin/login ──────────────────────────────────────────────────
+// Public route — must be declared BEFORE the auth middleware below.
+router.post('/login', (req: Request, res: Response) => {
+  const { email, password } = req.body || {};
+
+  const expectedEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
+  const expectedPassword = process.env.ADMIN_PASSWORD || '';
+
+  if (!expectedEmail || !expectedPassword) {
+    return res.status(503).json({ message: 'Admin credentials are not configured on the server.' });
   }
 
-  if (!expectedKey) {
+  if (
+    !email ||
+    !password ||
+    email.trim().toLowerCase() !== expectedEmail ||
+    password !== expectedPassword
+  ) {
+    return res.status(401).json({ message: 'Invalid email or password.' });
+  }
+
+  // Issue a random session token
+  const token = crypto.randomBytes(32).toString('hex');
+  activeSessions.add(token);
+
+  // Auto-expire after 8 hours
+  setTimeout(() => activeSessions.delete(token), 8 * 60 * 60 * 1000);
+
+  console.log(`[Admin] Login successful for ${email}`);
+  return res.status(200).json({ token });
+});
+
+// ── Auth middleware (applied to all routes below) ─────────────────────────
+router.use((req: Request, res: Response, next) => {
+  // In non-serverless dev with no credentials set, allow through
+  const emailSet = !!process.env.ADMIN_EMAIL;
+  const passwordSet = !!process.env.ADMIN_PASSWORD;
+
+  if (!emailSet && !passwordSet && !isServerlessRuntime()) {
     return next();
   }
 
   const authHeader = req.header('authorization') || '';
-  const bearerToken = authHeader.startsWith('Bearer ') ? authHeader.slice(7) : '';
-  const suppliedKey = req.header('x-admin-api-key') || bearerToken;
+  const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';
 
-  if (suppliedKey !== expectedKey) {
-    return res.status(401).json({ message: 'Unauthorized' });
+  if (!token || !activeSessions.has(token)) {
+    return res.status(401).json({ message: 'Unauthorized. Please log in.' });
   }
 
   return next();

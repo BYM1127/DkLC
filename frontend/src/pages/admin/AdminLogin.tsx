@@ -3,13 +3,14 @@ import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
 export const AdminLogin = () => {
-  const [key, setKey] = useState('');
+  const [email, setEmail] = useState('');
+  const [password, setPassword] = useState('');
   const [error, setError] = useState('');
   const [loading, setLoading] = useState(false);
   const { login, isAuthenticated } = useAdminAuth();
   const navigate = useNavigate();
 
-  // Already logged in
+  // Already logged in — redirect immediately
   if (isAuthenticated) {
     navigate('/admin', { replace: true });
     return null;
@@ -18,19 +19,24 @@ export const AdminLogin = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
-    if (!key.trim()) {
-      setError('Please enter the API key.');
+
+    if (!email.trim()) {
+      setError('Please enter your email address.');
+      return;
+    }
+    if (!password) {
+      setError('Please enter your password.');
       return;
     }
 
     setLoading(true);
-    const success = await login(key.trim());
+    const result = await login(email, password);
     setLoading(false);
 
-    if (success) {
+    if (result.ok) {
       navigate('/admin', { replace: true });
     } else {
-      setError('Invalid API key. Please try again.');
+      setError(result.error || 'Invalid email or password. Please try again.');
     }
   };
 
@@ -43,16 +49,29 @@ export const AdminLogin = () => {
           <p className="admin-login-subtitle">Dimpho ke Lesego Catering Services</p>
         </div>
 
-        <form onSubmit={handleSubmit} className="admin-login-form">
+        <form onSubmit={handleSubmit} className="admin-login-form" noValidate>
           <div className="field">
-            <label htmlFor="admin-key">Admin API Key</label>
+            <label htmlFor="admin-email">Email address</label>
             <input
-              id="admin-key"
-              type="password"
-              placeholder="Enter your admin API key"
-              value={key}
-              onChange={e => setKey(e.target.value)}
+              id="admin-email"
+              type="email"
+              placeholder="admin@example.com"
+              value={email}
+              onChange={e => setEmail(e.target.value)}
+              autoComplete="username"
               autoFocus
+            />
+          </div>
+
+          <div className="field" style={{ marginTop: '14px' }}>
+            <label htmlFor="admin-password">Password</label>
+            <input
+              id="admin-password"
+              type="password"
+              placeholder="Enter your password"
+              value={password}
+              onChange={e => setPassword(e.target.value)}
+              autoComplete="current-password"
             />
           </div>
 
@@ -63,12 +82,12 @@ export const AdminLogin = () => {
             className="btn-admin btn-admin-primary admin-login-btn"
             disabled={loading}
           >
-            {loading ? 'Verifying...' : 'Sign In'}
+            {loading ? 'Signing in…' : 'Sign In'}
           </button>
         </form>
 
         <p className="admin-login-hint">
-          The API key is set as <code>ADMIN_API_KEY</code> in your environment variables.
+          Set <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code> in your environment variables to configure admin access.
         </p>
       </div>
     </div>

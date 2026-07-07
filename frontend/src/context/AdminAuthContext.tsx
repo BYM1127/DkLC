@@ -1,14 +1,15 @@
 import { createContext, useContext, useState, useCallback, type ReactNode } from 'react';
 
 interface AdminAuthContextType {
-  apiKey: string | null;
   isAuthenticated: boolean;
-  login: (key: string) => Promise<boolean>;
+  login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
 }
 
 const AdminAuthContext = createContext<AdminAuthContextType | null>(null);
+
+const SESSION_KEY = 'admin_session_token';
 
 export const useAdminAuth = () => {
   const ctx = useContext(AdminAuthContext);
@@ -17,41 +18,49 @@ export const useAdminAuth = () => {
 };
 
 export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
-  const [apiKey, setApiKey] = useState<string | null>(
-    () => sessionStorage.getItem('admin_api_key')
+  const [token, setToken] = useState<string | null>(
+    () => sessionStorage.getItem(SESSION_KEY)
   );
 
-  const isAuthenticated = !!apiKey;
+  const isAuthenticated = !!token;
 
-  const login = useCallback(async (key: string): Promise<boolean> => {
+  const login = useCallback(async (email: string, password: string) => {
     try {
-      // Verify the key by hitting a protected endpoint
-      const res = await fetch('/api/admin/contacts', {
-        headers: { 'x-admin-api-key': key },
+      const res = await fetch('/api/admin/login', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
       });
+
       if (res.ok) {
-        sessionStorage.setItem('admin_api_key', key);
-        setApiKey(key);
-        return true;
+        const data = await res.json();
+        if (data.token) {
+          sessionStorage.setItem(SESSION_KEY, data.token);
+          setToken(data.token);
+          return { ok: true };
+        }
+        return { ok: false, error: 'No token returned from server.' };
       }
-      return false;
+
+      const err = await res.json().catch(() => ({}));
+      return { ok: false, error: err.message || 'Invalid email or password.' };
     } catch {
-      return false;
+      return { ok: false, error: 'Could not reach the server. Please try again.' };
     }
   }, []);
 
   const logout = useCallback(() => {
-    sessionStorage.removeItem('admin_api_key');
-    setApiKey(null);
+    sessionStorage.removeItem(SESSION_KEY);
+    setToken(null);
   }, []);
 
   const fetchWithAuth = useCallback(
     async (url: string, options: RequestInit = {}): Promise<Response> => {
-      const storedKey = apiKey || sessionStorage.getItem('admin_api_key');
-      if (!storedKey) throw new Error('Not authenticated');
+      const storedToken = token || sessionStorage.getItem(SESSION_KEY);
+      if (!storedToken) throw new Error('Not authenticated');
 
       const headers = new Headers(options.headers || {});
-      headers.set('x-admin-api-key', storedKey);
+      headers.set('Authorization', `Bearer ${storedToken}`);
 
       if (options.body && typeof options.body === 'string') {
         headers.set('Content-Type', 'application/json');
@@ -59,11 +68,11 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
 
       return fetch(url, { ...options, headers });
     },
-    [apiKey]
+    [token]
   );
 
   return (
-    <AdminAuthContext.Provider value={{ apiKey, isAuthenticated, login, logout, fetchWithAuth }}>
+    <AdminAuthContext.Provider value={{ isAuthenticated, login, logout, fetchWithAuth }}>
       {children}
     </AdminAuthContext.Provider>
   );
