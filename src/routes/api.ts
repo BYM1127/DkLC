@@ -317,15 +317,10 @@ router.post('/orders', async (req: Request, res: Response) => {
     await orderRepo.save(order);
     console.log(`[API] ✅ Order saved successfully: ref=${order.orderRef}, id=${order.id}`);
 
-    // Send order confirmation WhatsApp notifications (async, don't block response)
+    // Send order confirmation email/WhatsApp notification (async, don't block response)
     emailService.sendOrderConfirmationEmail(order).catch(err => {
-      console.error('[API] Failed to send order WhatsApp notification:', err);
+      console.error('[API] Failed to send order notification:', err);
     });
-
-    let paymentLink = '';
-    if (paymentMethod === 'Online') {
-      paymentLink = `https://paystack.com/pay/demo_catering_link?ref=${order.orderRef}&amount=${Math.round(order.totalAmount * 100)}`;
-    }
 
     return res.status(200).json({
       success: true,
@@ -335,7 +330,6 @@ router.post('/orders', async (req: Request, res: Response) => {
       discount: order.discountAmount,
       customerWhatsappLink: emailService.buildCustomerOrderLink(order),
       businessWhatsappLink: emailService.buildAdminOrderLink(order),
-      paymentLink
     });
   } catch (error) {
     console.error('[API] ❌ Error creating order:', error);
