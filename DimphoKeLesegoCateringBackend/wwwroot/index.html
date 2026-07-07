@@ -817,9 +817,26 @@ footer a:hover{color:var(--gold);}
             <div class="field full">
               <label>Delivery or collection?</label>
               <div class="radio-row">
-                <label class="radio-opt"><input type="radio" name="fulfil" checked> Delivery to venue</label>
-                <label class="radio-opt"><input type="radio" name="fulfil"> Collection from Phaphadi</label>
+                <label class="radio-opt"><input type="radio" name="fulfil" value="Delivery" checked> Delivery to venue</label>
+                <label class="radio-opt"><input type="radio" name="fulfil" value="Collection"> Collection from Phaphadi</label>
               </div>
+            </div>
+
+            <div class="field full">
+              <label>Ingredient Sourcing</label>
+              <div class="radio-row">
+                <label class="radio-opt"><input type="radio" name="bk-sourcing" value="DkLC Provides" checked> DkLC Provides Ingredients</label>
+                <label class="radio-opt"><input type="radio" name="bk-sourcing" value="Client Provides"> Client Provides Ingredients (Labor only)</label>
+              </div>
+            </div>
+
+            <div class="field" id="bk-laborField" style="display:none;"><label for="bk-hours">Estimated Hours</label><input id="bk-hours" type="number" min="0" placeholder="e.g. 5"></div>
+            <div class="field" id="bk-rateField" style="display:none;">
+              <label for="bk-rate">Hourly Rate / Staff Level</label>
+              <select id="bk-rate">
+                <option value="150">Standard Server — R150/hr</option>
+                <option value="250">Senior Chef — R250/hr</option>
+              </select>
             </div>
 
             <div class="field full"><label for="bk-notes">Anything else we should know?</label>
@@ -890,8 +907,16 @@ footer a:hover{color:var(--gold);}
                 </div>
               </div>
 
-              <div class="field full" id="orderAddressField"><label for="od-address">Delivery address</label><input id="od-address" type="text" placeholder="Street, suburb, town"></div>
+              <div class="field" id="orderAddressField"><label for="od-address">Delivery address</label><input id="od-address" type="text" placeholder="Street, suburb, town"></div>
+              <div class="field" id="orderDistanceField"><label for="od-distance">Distance from Kitchen (km)</label><input id="od-distance" type="number" min="0" placeholder="e.g. 15"></div>
 
+              <div class="field full">
+                <label>Payment Method</label>
+                <div class="radio-row">
+                  <label class="radio-opt"><input type="radio" name="od-payment" value="Online" checked> Online (Paystack)</label>
+                  <label class="radio-opt"><input type="radio" name="od-payment" value="EFT"> Manual EFT</label>
+                </div>
+              </div>
               <div class="field"><label for="od-date">Needed by (date)</label><input id="od-date" type="date"></div>
               <div class="field"><label for="od-time">Preferred time</label><input id="od-time" type="time"></div>
 
@@ -1080,6 +1105,20 @@ filterBtns.forEach(btn => {
 });
 
 // ---- Real form submissions ----
+function syncSourcingFields(){
+  const checked = document.querySelector('input[name="bk-sourcing"]:checked');
+  const laborField = document.getElementById('bk-laborField');
+  const rateField = document.getElementById('bk-rateField');
+  if (checked) {
+    const isClientProvides = checked.value === 'Client Provides';
+    if (laborField) laborField.style.display = isClientProvides ? '' : 'none';
+    if (rateField) rateField.style.display = isClientProvides ? '' : 'none';
+  }
+}
+document.querySelectorAll('input[name="bk-sourcing"]').forEach(radio => {
+  radio.addEventListener('change', syncSourcingFields);
+});
+
 document.getElementById('bookingForm').addEventListener('submit', e => {
   e.preventDefault();
   const name = document.getElementById('bk-name').value.trim();
@@ -1092,6 +1131,10 @@ document.getElementById('bookingForm').addEventListener('submit', e => {
   const fulfilEl = document.querySelector('input[name="fulfil"]:checked');
   const fulfilment = fulfilEl ? (fulfilEl.nextSibling.textContent.trim().includes("Phaphadi") ? "Collection" : "Delivery") : "Delivery";
   const notes = document.getElementById('bk-notes').value.trim();
+  const sourcingEl = document.querySelector('input[name="bk-sourcing"]:checked');
+  const sourcing = sourcingEl ? sourcingEl.value : 'DkLC Provides';
+  const hours = sourcing === 'Client Provides' ? (parseInt(document.getElementById('bk-hours').value, 10) || 0) : 0;
+  const rate = sourcing === 'Client Provides' ? (parseInt(document.getElementById('bk-rate').value, 10) || 0) : 0;
 
   const data = {
     name: name,
@@ -1102,7 +1145,10 @@ document.getElementById('bookingForm').addEventListener('submit', e => {
     estimatedGuests: guests,
     preferredPackage: preferredPkg,
     fulfilmentType: fulfilment,
-    notes: notes
+    notes: notes,
+    ingredientSourcing: sourcing,
+    estimatedHours: hours,
+    staffHourlyRate: rate
   };
 
   fetch('/api/bookings', {
@@ -1392,8 +1438,11 @@ document.getElementById('cartCheckoutBtn').addEventListener('click', () => {
 function syncAddressField(){
   const checked = document.querySelector('input[name="od-fulfil"]:checked');
   const addressField = document.getElementById('orderAddressField');
-  if (checked && addressField) {
-    addressField.style.display = checked.value === 'Delivery' ? '' : 'none';
+  const distanceField = document.getElementById('orderDistanceField');
+  if (checked) {
+    const isDelivery = checked.value === 'Delivery';
+    if (addressField) addressField.style.display = isDelivery ? '' : 'none';
+    if (distanceField) distanceField.style.display = isDelivery ? '' : 'none';
   }
 }
 document.querySelectorAll('input[name="od-fulfil"]').forEach(radio => {
@@ -1431,12 +1480,16 @@ orderForm.addEventListener('submit', function(e){
     return;
   }
   const fulfilEl = document.querySelector('input[name="od-fulfil"]:checked');
+  const paymentEl = document.querySelector('input[name="od-payment"]:checked');
+  const distanceEl = document.getElementById('od-distance');
   const customer = {
     name: document.getElementById('od-name').value.trim(),
     phone: document.getElementById('od-phone').value.trim(),
     email: document.getElementById('od-email').value.trim(),
     fulfilmentType: fulfilEl ? fulfilEl.value : 'Delivery',
     deliveryAddress: document.getElementById('od-address').value.trim(),
+    distanceKm: distanceEl ? Number(distanceEl.value) : 0,
+    paymentMethod: paymentEl ? paymentEl.value : 'EFT',
     dateNeeded: document.getElementById('od-date').value,
     timeNeeded: document.getElementById('od-time').value,
     notes: document.getElementById('od-notes').value.trim(),
@@ -1517,6 +1570,13 @@ orderForm.addEventListener('submit', function(e){
     if (couponMsg) {
       couponMsg.style.display = 'none';
       couponMsg.textContent = "";
+    }
+
+    if (resData.paymentLink) {
+      showToast('Redirecting to secure payment gateway...');
+      setTimeout(() => {
+        window.location.href = resData.paymentLink;
+      }, 1500);
     }
   })
   .catch(err => {

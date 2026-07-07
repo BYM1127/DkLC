@@ -198,6 +198,7 @@
         <p id="evtTimeRow"><strong>Time:</strong> <span id="evtTime">-</span></p>
         <p><strong>Type:</strong> <span id="evtType">-</span></p>
         <p><strong>Fulfilment:</strong> <span id="fulfilType">-</span></p>
+        <p id="sourcingRow" style="display: none;"><strong>Sourcing:</strong> <span id="sourcingType">-</span></p>
         <p id="addressRow" style="display: none;"><strong>Delivery Address:</strong> <span id="delAddress">-</span></p>
       </div>
     </div>
@@ -313,6 +314,11 @@
           document.getElementById('evtType').textContent = b.eventType;
           document.getElementById('fulfilType').textContent = b.fulfilmentType;
           
+          if (b.ingredientSourcing) {
+            document.getElementById('sourcingRow').style.display = 'block';
+            document.getElementById('sourcingType').textContent = b.ingredientSourcing;
+          }
+
           document.getElementById('bookingSummary').style.display = 'block';
           document.getElementById('bookPkg').textContent = b.preferredPackage;
           document.getElementById('bookGuests').textContent = b.estimatedGuests || 'TBD';
@@ -328,7 +334,7 @@
           else if (b.preferredPackage.includes("Silver")) rate = 165;
           else if (b.preferredPackage.includes("Gold")) rate = 220;
 
-          if (rate > 0 && guests > 0) {
+          if (rate > 0 && guests > 0 && b.ingredientSourcing !== 'Client Provides') {
             document.getElementById('itemsTable').style.display = 'table';
             const body = document.getElementById('itemsBody');
             const subtotal = rate * guests;
@@ -342,6 +348,21 @@
             `;
             document.getElementById('totalsBlock').style.display = 'block';
             document.getElementById('subtotalRow').style.display = 'none'; // Only show grand total for package estimate
+            document.getElementById('grandTotalVal').textContent = formatR(subtotal);
+          } else if (b.ingredientSourcing === 'Client Provides' && b.staffHourlyRate > 0 && b.estimatedHours > 0) {
+            document.getElementById('itemsTable').style.display = 'table';
+            const body = document.getElementById('itemsBody');
+            const subtotal = b.staffHourlyRate * b.estimatedHours;
+            body.innerHTML = `
+              <tr>
+                <td>Labor Only: Staff Level Rate</td>
+                <td class="num">${formatR(b.staffHourlyRate)}/hr</td>
+                <td class="num">${b.estimatedHours} hrs</td>
+                <td class="num">${formatR(subtotal)}</td>
+              </tr>
+            `;
+            document.getElementById('totalsBlock').style.display = 'block';
+            document.getElementById('subtotalRow').style.display = 'none';
             document.getElementById('grandTotalVal').textContent = formatR(subtotal);
           } else {
             // Custom packages or guests not specified

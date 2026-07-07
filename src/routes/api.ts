@@ -50,6 +50,35 @@ router.post('/contacts', async (req: Request, res: Response) => {
 // POST /api/bookings
 router.post('/bookings', async (req: Request, res: Response) => {
   try {
+
+// POST /api/contacts
+router.post('/contacts', async (req: Request, res: Response) => {
+  try {
+    const { name, email, phone, message } = req.body;
+
+    if (!name || !message) {
+      return res.status(400).json({ message: 'Name and Message are required.' });
+    }
+
+    const contactRepo = AppDataSource.getRepository(ContactMessage);
+    const contact = contactRepo.create({ name, email, phone, message });
+    await contactRepo.save(contact);
+
+    // Send confirmation WhatsApp notifications (async, don't block response)
+    emailService.sendContactFormEmail(contact).catch(err => {
+      console.error('Failed to send contact WhatsApp notification:', err);
+    });
+
+    return res.status(200).json({ success: true, id: contact.id });
+  } catch (error) {
+    console.error('Error creating contact:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// POST /api/bookings
+router.post('/bookings', async (req: Request, res: Response) => {
+  try {
     const {
       name,
       phone,
@@ -60,6 +89,9 @@ router.post('/bookings', async (req: Request, res: Response) => {
       preferredPackage,
       fulfilmentType,
       notes,
+      ingredientSourcing = 'DkLC Provides',
+      staffHourlyRate = 0,
+      estimatedHours = 0,
     } = req.body;
 
     if (!name || !phone) {
@@ -87,6 +119,9 @@ router.post('/bookings', async (req: Request, res: Response) => {
       preferredPackage: preferredPackage || '',
       fulfilmentType: fulfilmentType || '',
       notes: notes || '',
+      ingredientSourcing,
+      staffHourlyRate: Number(staffHourlyRate) || 0,
+      estimatedHours: Number(estimatedHours) || 0,
       status: 'Pending',
     });
 
@@ -161,11 +196,87 @@ router.get('/coupons/validate', async (req: Request, res: Response) => {
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
+  } catch (error) {
+    console.error('Error creating booking:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/availability/blocked-dates
+router.get('/availability/blocked-dates', async (req: Request, res: Response) => {
+  try {
+    const blockedDateRepo = AppDataSource.getRepository(BlockedDate);
+    const dates = await blockedDateRepo.find();
+    const dateStrings = dates.map(d => d.date);
+    return res.status(200).json(dateStrings);
+  } catch (error) {
+    console.error('Error fetching blocked dates:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/coupons/validate
+router.get('/coupons/validate', async (req: Request, res: Response) => {
+  try {
+    const { code, amount } = req.query;
+
+    if (!code) {
+      return res.status(400).json({ message: 'Coupon code is required.' });
+    }
+
+    const couponRepo = AppDataSource.getRepository(Coupon);
+    const coupon = await couponRepo.findOne({
+      where: {
+        code: (code as string).toUpperCase(),
+        isActive: true,
+      },
+    });
+
+    if (!coupon) {
+      return res.status(200).json({ valid: false, message: 'Invalid or expired coupon code.' });
+    }
+
+    const amountNum = parseFloat(amount as string);
+    let discount = 0;
+
+    if (coupon.discountType === 'Percentage') {
+      discount = amountNum * (coupon.value / 100);
+    } else if (coupon.discountType === 'Fixed') {
+      discount = coupon.value;
+    }
+
+    discount = Math.min(discount, amountNum);
+    const newTotal = amountNum - discount;
+
+    return res.status(200).json({
+      valid: true,
+      discount: Math.round(discount * 100) / 100,
+      newTotal: Math.round(newTotal * 100) / 100,
+      code: coupon.code,
+    });
+  } catch (error) {
+    console.error('Error validating coupon:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
 
 // POST /api/orders
 router.post('/orders', async (req: Request, res: Response) => {
   try {
-    const { name, phone, email, fulfilmentType, deliveryAddress, dateNeeded, timeNeeded, notes, couponApplied, items } = req.body;
+    const {
+      name,
+      phone,
+      email,
+      fulfilmentType,
+      deliveryAddress,
+      distanceKm = 0,
+      dateNeeded,
+      timeNeeded,
+      notes,
+      couponApplied,
+      items,
+      paymentMethod = 'EFT',
+    } = req.body;
 
     if (!name || !phone) {
       return res.status(400).json({ message: 'Name and Phone number are required.' });
@@ -202,7 +313,14 @@ router.post('/orders', async (req: Request, res: Response) => {
       }
     }
 
-    const totalAmount = originalAmount - discountAmount;
+    // Delivery fee logic
+    let deliveryFee = 0;
+    if (fulfilmentType === 'Delivery') {
+      // Base R100 + R50 per 200km
+      deliveryFee = 100 + (Math.floor(distanceKm / 200) * 50);
+    }
+
+    const totalAmount = originalAmount - discountAmount + deliveryFee;
     const orderRef = await generateUniqueOrderRef(orderRepo);
 
     const order = new Order();
@@ -213,13 +331,17 @@ router.post('/orders', async (req: Request, res: Response) => {
     order.email = email?.trim() || '';
     order.fulfilmentType = fulfilmentType || 'Delivery';
     order.deliveryAddress = deliveryAddress?.trim() || '';
+    order.distanceKm = distanceKm;
     order.dateNeeded = dateNeeded || '';
     order.timeNeeded = timeNeeded || '';
     order.notes = notes?.trim() || '';
     order.originalAmount = Math.round(originalAmount * 100) / 100;
     order.discountAmount = Math.round(discountAmount * 100) / 100;
+    order.deliveryFee = deliveryFee;
     order.totalAmount = Math.round(totalAmount * 100) / 100;
     order.couponApplied = appliedCouponCode;
+    order.paymentMethod = paymentMethod;
+    order.paymentStatus = paymentMethod === 'Online' ? 'Pending (Paystack)' : 'Pending (EFT)';
     order.status = 'Pending';
     order.orderItems = items.map((item: any) => {
       const oi = new OrderItem();
@@ -238,6 +360,11 @@ router.post('/orders', async (req: Request, res: Response) => {
       console.error('Failed to send order WhatsApp notification:', err);
     });
 
+    let paymentLink = null;
+    if (order.paymentMethod === 'Online') {
+      paymentLink = 'https://paystack.com/pay/demo_catering_link';
+    }
+
     return res.status(200).json({
       success: true,
       orderRef: order.orderRef,
@@ -246,6 +373,7 @@ router.post('/orders', async (req: Request, res: Response) => {
       discount: order.discountAmount,
       customerWhatsappLink: emailService.buildCustomerOrderLink(order),
       businessWhatsappLink: emailService.buildAdminOrderLink(order),
+      paymentLink
     });
   } catch (error) {
     console.error('Error creating order:', error);

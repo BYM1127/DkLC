@@ -682,13 +682,25 @@ async function loadOrders() {
         <td>${statusBadge(o.status)}</td>
         <td>
           <button class="btn btn-sm btn-outline" onclick="viewOrder(${o.id})">View</button>
-          <select onchange="updateOrderStatus(${o.id}, this.value)" style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:3px 6px;font-size:0.74rem;margin-top:4px;">
-            <option value="">Set status</option>
-            <option value="Pending">Pending</option>
-            <option value="Confirmed">Confirmed</option>
-            <option value="Completed">Completed</option>
-            <option value="Cancelled">Cancelled</option>
-          </select>
+          <div style="margin-top:4px;">
+            <select onchange="updateOrderStatus(${o.id}, this.value)" style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:3px 6px;font-size:0.74rem;width:100%;">
+              <option value="">Set status</option>
+              <option value="Pending">Pending</option>
+              <option value="Confirmed">Confirmed</option>
+              <option value="Completed">Completed</option>
+              <option value="Cancelled">Cancelled</option>
+            </select>
+          </div>
+          <div style="margin-top:4px;">
+            <select onchange="updatePaymentStatus(${o.id}, this.value)" style="background:var(--surface-2);border:1px solid var(--border);border-radius:4px;color:var(--text);padding:3px 6px;font-size:0.74rem;width:100%;">
+              <option value="">Set Payment</option>
+              <option value="Pending (EFT)">Pending (EFT)</option>
+              <option value="Pending (Paystack)">Pending (Paystack)</option>
+              <option value="Paid">Paid</option>
+              <option value="Failed">Failed</option>
+              <option value="Refunded">Refunded</option>
+            </select>
+          </div>
         </td>
       </tr>`).join('')}</tbody>
     </table>`;
@@ -711,6 +723,9 @@ async function viewOrder(id) {
         <div><strong>Fulfilment:</strong> ${o.fulfilmentType}</div>
         <div><strong>Address:</strong> ${esc(o.deliveryAddress || '-')}</div>
         <div><strong>Needed:</strong> ${o.dateNeeded || '-'} ${o.timeNeeded || ''}</div>
+        <div><strong>Distance (km):</strong> ${o.distanceKm || '0'}</div>
+        <div><strong>Delivery Fee:</strong> R${o.deliveryFee || '0'}</div>
+        <div><strong>Payment:</strong> ${o.paymentMethod || '-'} (${o.paymentStatus || '-'})</div>
         <div><strong>Status:</strong> ${statusBadge(o.status)}</div>
         <div><strong>Coupon:</strong> ${o.couponApplied || '-'}</div>
       </div>
@@ -738,6 +753,15 @@ async function updateOrderStatus(id, status) {
   try {
     await apiPut(`/orders/${id}/status`, { status });
     showToast(`Order #${id} updated to ${status}`, 'success');
+    loadOrders();
+  } catch(e) { showToast(e.message, 'error'); }
+}
+
+async function updatePaymentStatus(id, paymentStatus) {
+  if (!paymentStatus) return;
+  try {
+    await apiPut(`/orders/${id}/paymentStatus`, { paymentStatus });
+    showToast(`Order #${id} payment status updated to ${paymentStatus}`, 'success');
     loadOrders();
   } catch(e) { showToast(e.message, 'error'); }
 }
@@ -799,6 +823,8 @@ async function viewBooking(id) {
         <div><strong>Guests:</strong> ${b.estimatedGuests || '-'}</div>
         <div><strong>Package:</strong> ${esc(b.preferredPackage)}</div>
         <div><strong>Fulfilment:</strong> ${b.fulfilmentType}</div>
+        <div><strong>Sourcing:</strong> ${b.ingredientSourcing || 'DkLC Provides'}</div>
+        ${b.ingredientSourcing === 'Client Provides' ? `<div><strong>Labor Rate:</strong> R${b.staffHourlyRate}/hr</div><div><strong>Est. Hours:</strong> ${b.estimatedHours}</div>` : ''}
         <div><strong>Status:</strong> ${statusBadge(b.status)}</div>
         <div><strong>Created:</strong> ${fmtDate(b.createdAt)}</div>
       </div>

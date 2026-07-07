@@ -15,7 +15,11 @@ export class Order {
   originalAmount!: number;
   discountAmount!: number;
   totalAmount!: number;
+  deliveryFee: number = 0;
+  distanceKm: number = 0;
   couponApplied: string = '';
+  paymentMethod: string = '';
+  paymentStatus: string = 'Pending';
   status: string = 'Pending';
   orderItems: OrderItem[] = [];
   createdAt!: Date;

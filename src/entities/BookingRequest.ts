@@ -10,6 +10,9 @@ export class BookingRequest {
   preferredPackage: string = '';
   fulfilmentType: string = '';
   notes: string = '';
+  ingredientSourcing: string = 'DkLC Provides';
+  staffHourlyRate: number = 0;
+  estimatedHours: number = 0;
   status: string = 'Pending';
   createdAt!: Date;
 }

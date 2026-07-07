@@ -244,6 +244,30 @@ export class EmailTemplates {
         </tr>`
       : '';
 
+    const deliveryFeeSection = order.deliveryFee > 0
+      ? `
+        <tr style="background-color: #FFF8EF;">
+          <td colspan="3" style="text-align: right;"><strong>Delivery Fee:</strong></td>
+          <td><strong>R${order.deliveryFee.toFixed(2)}</strong></td>
+        </tr>`
+      : '';
+
+    const eftInstructions = order.paymentMethod === 'EFT' 
+      ? `
+        <div style="background-color: #FFF8EF; padding: 15px; border-radius: 8px; margin-top: 20px; border-left: 4px solid #C2902F;">
+          <h3 style="margin-top: 0;">Payment Instructions (EFT)</h3>
+          <p>Please make your payment to the following bank account to secure your order:</p>
+          <p>
+            <strong>Bank:</strong> FNB<br>
+            <strong>Account Name:</strong> Dimpho Ke Lesego Catering<br>
+            <strong>Account Number:</strong> 62123456789<br>
+            <strong>Branch Code:</strong> 250655<br>
+            <strong>Reference:</strong> ${order.orderRef}
+          </p>
+          <p>Please reply to this email or send your Proof of Payment to our WhatsApp line.</p>
+        </div>`
+      : '';
+
     const html = `
     <!DOCTYPE html>
     <html>
@@ -266,6 +290,7 @@ export class EmailTemplates {
           ${order.fulfilmentType === 'Delivery' ? `<p><strong>Delivery Address:</strong> ${this.escapeHtml(order.deliveryAddress)}</p>` : ''}
           <p><strong>Required Date:</strong> ${order.dateNeeded}</p>
           <p><strong>Required Time:</strong> ${order.timeNeeded}</p>
+          <p><strong>Payment Method:</strong> ${order.paymentMethod}</p>
           ${order.notes ? `<p><strong>Special Instructions:</strong> ${this.escapeHtml(order.notes)}</p>` : ''}
         </div>
 
@@ -282,6 +307,7 @@ export class EmailTemplates {
           <tbody>
             ${itemRows}
             ${discountSection}
+            ${deliveryFeeSection}
           </tbody>
         </table>
 
@@ -289,7 +315,9 @@ export class EmailTemplates {
           Total Amount Due: R${order.totalAmount.toFixed(2)}
         </div>
 
-        <p>We will contact you within <strong>24 hours</strong> at <strong>${this.escapeHtml(order.phone)}</strong> or email you at <strong>${this.escapeHtml(order.email)}</strong> to confirm event details, delivery fees, and secure payment terms.</p>
+        ${eftInstructions}
+
+        <p>We will contact you within <strong>24 hours</strong> at <strong>${this.escapeHtml(order.phone)}</strong> or email you at <strong>${this.escapeHtml(order.email)}</strong> to confirm event details and final arrangements.</p>
 
         <h3>Next Steps</h3>
         <ul>
