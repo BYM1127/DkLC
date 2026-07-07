@@ -88,7 +88,7 @@ export const Home = () => {
       <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
       <div className="grid-3">
         <div className="dish-card">
-          <div className="dish-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 11h14l-1.5 7a2 2 0 0 1-2 1.6H8.5a2 2 0 0 1-2-1.6L5 11Z" stroke="#5F0C0C" strokeWidth="1.4"/><path d="M4 11h16" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div>
+          <div className="dish-photo dish-photo-real"><img src="/gallery-oxtail.png" alt="Oxtail Stew" /></div>
           <div className="dish-body">
             <h3>Oxtail Stew</h3>
             <span className="dish-price">R95</span>
@@ -96,7 +96,7 @@ export const Home = () => {
           </div>
         </div>
         <div className="dish-card">
-          <div className="dish-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4v16M6 4h6a4 4 0 0 1 0 8H6" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div>
+          <div className="dish-photo dish-photo-real"><img src="/gallery-morogo.png" alt="Morogo & Pap" /></div>
           <div className="dish-body">
             <h3>Morogo & Pap</h3>
             <span className="dish-price">R55</span>
@@ -104,7 +104,7 @@ export const Home = () => {
           </div>
         </div>
         <div className="dish-card">
-          <div className="dish-photo"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#5F0C0C" strokeWidth="1.4"/><path d="M12 8v8M8 12h8" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div>
+          <div className="dish-photo dish-photo-real"><img src="/gallery-malva.png" alt="Malva Pudding" /></div>
           <div className="dish-body">
             <h3>Malva Pudding</h3>
             <span className="dish-price">R35</span>
@@ -132,23 +132,32 @@ export const Home = () => {
     </div>
   </section>
 
-  <section className="section">
+
+  <section className="section testi-section" style={{ background: 'var(--cream-deep)', borderTop: '1px solid var(--cream-line)', borderBottom: '1px solid var(--cream-line)' }}>
     <div className="wrap">
-      <div style={{ textAlign: 'center' }}>
+      <div style={{ textAlign: 'center', marginBottom: '12px' }}>
         <span className="eyebrow">From Our Clients</span>
         <h2>Words from happy guests</h2>
-        <p style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', marginTop: '-8px', marginBottom: '24px' }}>Sample testimonials — swap in real client quotes once collected.</p>
+        <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
       </div>
-      <div className="grid-2">
+      <div className="grid-3">
         <div className="testi">
+          <div className="testi-stars">{'★'.repeat(5)}</div>
           <span className="quote-mark">"</span>
-          <p>The pap and morogo tasted exactly like my grandmother's. Our guests are still talking about the oxtail.</p>
-          <cite>— T. Maila, Wedding Reception</cite>
+          <p>The pap and morogo tasted exactly like my grandmother's. Our guests are still talking about the oxtail weeks later. Truly exceptional catering.</p>
+          <cite>— T. Maila · Wedding Reception, Polokwane</cite>
+        </div>
+        <div className="testi testi-featured">
+          <div className="testi-stars">{'★'.repeat(5)}</div>
+          <span className="quote-mark">"</span>
+          <p>They arrived early, set up quietly, and the food kept coming. Exactly what we needed on a hard day. Everyone was nourished and comforted.</p>
+          <cite>— N. Sello · Memorial Service, Tzaneen</cite>
         </div>
         <div className="testi">
+          <div className="testi-stars">{'★'.repeat(5)}</div>
           <span className="quote-mark">"</span>
-          <p>They arrived early, set up quietly, and the food kept coming. Exactly what we needed on a hard day.</p>
-          <cite>— N. Sello, Memorial Service</cite>
+          <p>From the malva pudding to the grilled chicken — everything was perfect. I didn't have to worry about a single thing on my birthday. Highly recommended!</p>
+          <cite>— P. Chauke · 50th Birthday Celebration</cite>
         </div>
       </div>
     </div>

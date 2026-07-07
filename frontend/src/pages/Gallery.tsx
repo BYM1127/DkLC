@@ -1,5 +1,34 @@
+import { useState } from 'react';
+
+type GalleryItem = {
+  id: number;
+  src: string;
+  alt: string;
+  caption: string;
+  tag: string;
+  cat: 'mains' | 'platters' | 'desserts' | 'setups';
+};
+
+const GALLERY_ITEMS: GalleryItem[] = [
+  { id: 1, src: '/gallery-oxtail.png',      alt: 'Rich slow-braised oxtail stew in dark bowl',         caption: 'Oxtail Stew',           tag: 'Mains',        cat: 'mains'    },
+  { id: 2, src: '/gallery-chicken.png',     alt: 'Golden grilled chicken quarters on wooden board',     caption: 'Grilled Chicken',       tag: 'Mains',        cat: 'mains'    },
+  { id: 3, src: '/gallery-morogo.png',      alt: 'Traditional morogo and pap on white plate',           caption: 'Morogo & Pap',          tag: 'Mains',        cat: 'mains'    },
+  { id: 4, src: '/gallery-feast.png',       alt: 'Overhead view of full South African feast spread',    caption: 'Full Feast Spread',     tag: 'Platters',     cat: 'platters' },
+  { id: 5, src: '/gallery-salads.png',      alt: 'Colorful catering salad and sides table',             caption: 'Salad & Sides Table',   tag: 'Platters',     cat: 'platters' },
+  { id: 6, src: '/gallery-malva.png',       alt: 'Warm malva pudding with custard sauce',               caption: 'Malva Pudding',         tag: 'Desserts',     cat: 'desserts' },
+  { id: 7, src: '/gallery-koeksisters.png', alt: 'Golden sticky koeksisters on white plate',            caption: 'Koeksisters',           tag: 'Desserts',     cat: 'desserts' },
+  { id: 8, src: '/gallery-wedding.png',     alt: 'Elegant outdoor wedding reception catering setup',    caption: 'Wedding Reception',     tag: 'Event Setups', cat: 'setups'   },
+  { id: 9, src: '/gallery-buffet.png',      alt: 'Professional catering buffet layout with chafing dishes', caption: 'Buffet Layout',     tag: 'Event Setups', cat: 'setups'   },
+];
+
+type Filter = 'all' | 'mains' | 'platters' | 'desserts' | 'setups';
 
 export const Gallery = () => {
+  const [active, setActive] = useState<Filter>('all');
+  const [lightbox, setLightbox] = useState<GalleryItem | null>(null);
+
+  const filtered = active === 'all' ? GALLERY_ITEMS : GALLERY_ITEMS.filter(i => i.cat === active);
+
   return (
     <section className="page" data-page="gallery">
 
@@ -7,35 +36,64 @@ export const Gallery = () => {
     <div className="wrap">
       <span className="eyebrow on-dark">Gallery</span>
       <h1>A taste of what we serve.</h1>
-      <p>Placeholder visuals shown below — swap these for your own event and food photography.</p>
+      <p>From intimate family tables to grand wedding feasts — every dish, crafted with love.</p>
     </div>
   </div>
 
   <section className="section">
     <div className="wrap">
       <div className="filter-row" id="filterRow">
-        <button className="filter-btn active" data-filter="all">All</button>
-        <button className="filter-btn" data-filter="mains">Mains</button>
-        <button className="filter-btn" data-filter="platters">Platters & Spreads</button>
-        <button className="filter-btn" data-filter="desserts">Desserts</button>
-        <button className="filter-btn" data-filter="setups">Event Setups</button>
+        {(['all', 'mains', 'platters', 'desserts', 'setups'] as Filter[]).map(f => (
+          <button
+            key={f}
+            className={`filter-btn${active === f ? ' active' : ''}`}
+            onClick={() => setActive(f)}
+          >
+            {f === 'all' ? 'All' : f === 'mains' ? 'Mains' : f === 'platters' ? 'Platters & Spreads' : f === 'desserts' ? 'Desserts' : 'Event Setups'}
+          </button>
+        ))}
       </div>
 
       <div className="gallery-grid" id="galleryGrid">
-        <div className="gallery-item" data-cat="mains"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M5 11h14l-1.5 7a2 2 0 0 1-2 1.6H8.5a2 2 0 0 1-2-1.6L5 11Z" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Oxtail Stew<span className="tag">Mains</span></div></div>
-        <div className="gallery-item" data-cat="mains"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Grilled Chicken Quarters<span className="tag">Mains</span></div></div>
-        <div className="gallery-item" data-cat="platters"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><rect x="4" y="9" width="16" height="9" rx="2" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Full Feast Spread<span className="tag">Platters</span></div></div>
-        <div className="gallery-item" data-cat="platters"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="9" stroke="#5F0C0C" strokeWidth="1.4"/><circle cx="12" cy="12" r="4" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Salad & Sides Table<span className="tag">Platters</span></div></div>
-        <div className="gallery-item" data-cat="desserts"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><circle cx="12" cy="12" r="8" stroke="#5F0C0C" strokeWidth="1.4"/><path d="M12 8v8M8 12h8" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Malva Pudding<span className="tag">Desserts</span></div></div>
-        <div className="gallery-item" data-cat="desserts"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M6 18c0-7 3-12 6-12s6 5 6 12" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Koeksisters<span className="tag">Desserts</span></div></div>
-        <div className="gallery-item" data-cat="setups"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M4 20h16M6 20V8h12v12" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Reception Table Setup<span className="tag">Event Setups</span></div></div>
-        <div className="gallery-item" data-cat="setups"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M12 3v18M3 12h18" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Wedding Buffet Layout<span className="tag">Event Setups</span></div></div>
-        <div className="gallery-item" data-cat="mains"><div className="gallery-photo"><svg viewBox="0 0 24 24" fill="none"><path d="M6 4v16M6 4h6a4 4 0 0 1 0 8H6" stroke="#5F0C0C" strokeWidth="1.4"/></svg></div><div className="gallery-cap">Morogo & Pap<span className="tag">Mains</span></div></div>
+        {filtered.map(item => (
+          <div
+            key={item.id}
+            className="gallery-item gallery-item-real"
+            onClick={() => setLightbox(item)}
+            role="button"
+            tabIndex={0}
+            onKeyDown={e => e.key === 'Enter' && setLightbox(item)}
+            aria-label={`View ${item.caption}`}
+          >
+            <div className="gallery-photo gallery-photo-real">
+              <img src={item.src} alt={item.alt} loading="lazy" />
+            </div>
+            <div className="gallery-cap">
+              {item.caption}
+              <span className="tag">{item.tag}</span>
+            </div>
+          </div>
+        ))}
       </div>
-
-      <p className="gallery-note">These tiles are stylised placeholders. Send us your event photos and we'll set them directly into this grid.</p>
     </div>
   </section>
+
+  {/* Lightbox */}
+  {lightbox && (
+    <div
+      className="gallery-lightbox-overlay"
+      onClick={() => setLightbox(null)}
+      role="dialog"
+      aria-modal="true"
+      aria-label={lightbox.caption}
+    >
+      <button className="gallery-lightbox-close" onClick={() => setLightbox(null)} aria-label="Close">✕</button>
+      <div className="gallery-lightbox-inner" onClick={e => e.stopPropagation()}>
+        <img src={lightbox.src} alt={lightbox.alt} />
+        <p className="gallery-lightbox-cap">{lightbox.caption} <span className="tag">{lightbox.tag}</span></p>
+      </div>
+    </div>
+  )}
 
 </section>
   );
