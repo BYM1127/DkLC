@@ -106,6 +106,9 @@ router.post('/bookings', async (req: Request, res: Response) => {
       preferredPackage,
       fulfilmentType,
       notes,
+      ingredientSourcing,
+      estimatedHours,
+      staffHourlyRate
     } = req.body;
     console.log(`[API] Booking submission from: ${name}, phone: ${phone}, event: ${eventType}, date: ${eventDate}`);
 
@@ -136,6 +139,9 @@ router.post('/bookings', async (req: Request, res: Response) => {
       preferredPackage: preferredPackage || '',
       fulfilmentType: fulfilmentType || '',
       notes: notes || '',
+      ingredientSourcing: ingredientSourcing || '',
+      estimatedHours: estimatedHours ? Number(estimatedHours) : null,
+      staffHourlyRate: staffHourlyRate || '',
       status: 'Pending',
     });
 
@@ -220,7 +226,7 @@ router.get('/coupons/validate', async (req: Request, res: Response) => {
 // POST /api/orders
 router.post('/orders', async (req: Request, res: Response) => {
   try {
-    const { name, phone, email, fulfilmentType, deliveryAddress, dateNeeded, timeNeeded, notes, couponApplied, items } = req.body;
+    const { name, phone, email, fulfilmentType, deliveryAddress, dateNeeded, timeNeeded, notes, couponApplied, items, distanceKm, paymentMethod } = req.body;
     console.log(`[API] Order submission from: ${name}, phone: ${phone}, items: ${items?.length || 0}`);
     if (items && items.length > 0) {
       console.log(`[API] Order items:`, items.map((i: any) => `${i.name} x${i.quantity} @R${i.price}`).join(', '));
@@ -267,9 +273,16 @@ router.post('/orders', async (req: Request, res: Response) => {
       }
     }
 
-    const totalAmount = originalAmount - discountAmount;
+    // Delivery Fee Calculation
+    let deliveryFee = 0;
+    if (fulfilmentType === 'Delivery') {
+      const dist = distanceKm ? parseFloat(distanceKm) : 0;
+      deliveryFee = 100 + (Math.ceil(dist / 200) * 50);
+    }
+
+    const totalAmount = originalAmount - discountAmount + deliveryFee;
     const orderRef = await generateUniqueOrderRef(orderRepo);
-    console.log(`[API] Order totals: original=R${originalAmount}, discount=R${discountAmount}, total=R${totalAmount}, ref=${orderRef}`);
+    console.log(`[API] Order totals: original=R${originalAmount}, discount=R${discountAmount}, delivery=R${deliveryFee}, total=R${totalAmount}, ref=${orderRef}`);
 
     const order = new Order();
     order.orderRef = orderRef;
@@ -282,6 +295,10 @@ router.post('/orders', async (req: Request, res: Response) => {
     order.dateNeeded = dateNeeded || '';
     order.timeNeeded = timeNeeded || '';
     order.notes = notes?.trim() || '';
+    order.distanceKm = distanceKm ? parseFloat(distanceKm) : 0;
+    order.deliveryFee = deliveryFee;
+    order.paymentMethod = paymentMethod || 'EFT';
+    order.paymentStatus = 'Pending';
     order.originalAmount = Math.round(originalAmount * 100) / 100;
     order.discountAmount = Math.round(discountAmount * 100) / 100;
     order.totalAmount = Math.round(totalAmount * 100) / 100;
@@ -305,6 +322,11 @@ router.post('/orders', async (req: Request, res: Response) => {
       console.error('[API] Failed to send order WhatsApp notification:', err);
     });
 
+    let paymentLink = '';
+    if (paymentMethod === 'Online') {
+      paymentLink = `https://paystack.com/pay/demo_catering_link?ref=${order.orderRef}&amount=${Math.round(order.totalAmount * 100)}`;
+    }
+
     return res.status(200).json({
       success: true,
       orderRef: order.orderRef,
@@ -313,6 +335,7 @@ router.post('/orders', async (req: Request, res: Response) => {
       discount: order.discountAmount,
       customerWhatsappLink: emailService.buildCustomerOrderLink(order),
       businessWhatsappLink: emailService.buildAdminOrderLink(order),
+      paymentLink
     });
   } catch (error) {
     console.error('[API] ❌ Error creating order:', error);

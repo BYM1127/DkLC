@@ -1,4 +1,4 @@
-import { useState } from 'react';
+import { useState, useEffect } from 'react';
 
 interface QuoteModalProps {
   isOpen: boolean;
@@ -10,6 +10,11 @@ interface QuoteModalProps {
   entityType: 'order' | 'booking' | 'contact';
   entityId: number;
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
+  ingredientSourcing?: string;
+  estimatedHours?: number;
+  staffHourlyRate?: string;
+  estimatedGuests?: number;
+  preferredPackage?: string;
 }
 
 interface QuoteItem {
@@ -27,12 +32,44 @@ export const QuoteModal = ({
   entityType,
   entityId,
   fetchWithAuth,
+  ingredientSourcing,
+  estimatedHours,
+  staffHourlyRate,
+  estimatedGuests,
+  preferredPackage,
 }: QuoteModalProps) => {
   const [message, setMessage] = useState('');
   const [items, setItems] = useState<QuoteItem[]>([{ description: '', amount: '' }]);
   const [totalAmount, setTotalAmount] = useState('');
   const [sending, setSending] = useState(false);
   const [result, setResult] = useState<{ success?: boolean; whatsappLink?: string; error?: string } | null>(null);
+
+  // Pre-fill quote logic
+  useEffect(() => {
+    if (isOpen && entityType === 'booking') {
+      if (ingredientSourcing === 'Client Provides Ingredients') {
+        const rateMatch = staffHourlyRate?.match(/R(\d+)/);
+        const rate = rateMatch ? parseInt(rateMatch[1], 10) : 0;
+        const total = (estimatedHours || 0) * rate;
+        
+        setItems([
+          { description: `Labor: ${staffHourlyRate} x ${estimatedHours} hours`, amount: total.toString() },
+          { description: 'Transport Fee', amount: '150' }
+        ]);
+        setTotalAmount((total + 150).toString());
+      } else if (ingredientSourcing === 'DkLC Provides Ingredients') {
+        const pkgMatch = preferredPackage?.match(/R(\d+)/);
+        const pkgRate = pkgMatch ? parseInt(pkgMatch[1], 10) : 0;
+        const total = (estimatedGuests || 0) * pkgRate;
+        
+        setItems([
+          { description: `Package: ${preferredPackage} x ${estimatedGuests} guests`, amount: total.toString() },
+          { description: 'Setup & Transport', amount: '250' }
+        ]);
+        setTotalAmount((total + 250).toString());
+      }
+    }
+  }, [isOpen, entityType, ingredientSourcing, estimatedHours, staffHourlyRate, estimatedGuests, preferredPackage]);
 
   if (!isOpen) return null;
 

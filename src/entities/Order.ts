@@ -12,6 +12,10 @@ export class Order {
   dateNeeded: string = '';
   timeNeeded: string = '';
   notes: string = '';
+  distanceKm: number = 0;
+  deliveryFee: number = 0;
+  paymentMethod: string = '';
+  paymentStatus: string = 'Pending';
   originalAmount!: number;
   discountAmount!: number;
   totalAmount!: number;

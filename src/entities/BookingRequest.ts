@@ -10,6 +10,9 @@ export class BookingRequest {
   preferredPackage: string = '';
   fulfilmentType: string = '';
   notes: string = '';
+  ingredientSourcing: string = '';
+  estimatedHours: number | null = null;
+  staffHourlyRate: string = '';
   status: string = 'Pending';
   createdAt!: Date;
 }

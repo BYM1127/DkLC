@@ -18,6 +18,8 @@ export const Order = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
   const [fulfilmentType, setFulfilmentType] = useState('Delivery');
+  const [distanceKm, setDistanceKm] = useState<string>('');
+  const [paymentMethod, setPaymentMethod] = useState('EFT');
   const { cartItems, cartTotal, updateQuantity, removeFromCart } = useCart();
 
   const minimumDate = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString().slice(0, 10);
@@ -25,6 +27,14 @@ export const Order = () => {
   const handleSubmit = async (e: any) => {
     e.preventDefault();
     setErrors({});
+
+    if (fulfilmentType === 'Delivery') {
+      const dist = parseFloat(distanceKm);
+      if (isNaN(dist) || dist < 0) {
+        setErrors({ distanceKm: 'Please enter a valid delivery distance in km' });
+        return;
+      }
+    }
 
     if (cartItems.length === 0) {
       alert('Your cart is empty. Please add items from the Menu first.');
@@ -34,6 +44,8 @@ export const Order = () => {
     const formData = new FormData(e.target);
     const dataObj = Object.fromEntries(formData.entries());
     dataObj.fulfil = fulfilmentType;
+    dataObj.distanceKm = distanceKm;
+    dataObj.paymentMethod = paymentMethod;
 
     if (fulfilmentType === 'Delivery' && !String(dataObj.address || '').trim()) {
       setErrors({ address: 'Delivery address is required for delivery orders' });
@@ -93,6 +105,11 @@ export const Order = () => {
         if (waLink && result.customerWhatsappLink) waLink.href = result.customerWhatsappLink;
         if (mailLink && result.businessWhatsappLink) mailLink.href = result.businessWhatsappLink;
 
+        if (result.paymentLink) {
+          window.location.href = result.paymentLink;
+          return;
+        }
+
         // Show confirmation, hide form fields
         const formFields = document.getElementById('orderFormFields');
         const confirmDiv = document.getElementById('orderConfirm');
@@ -100,6 +117,8 @@ export const Order = () => {
         if (confirmDiv) confirmDiv.style.display = 'block';
 
         e.target.reset();
+        setDistanceKm('');
+        setPaymentMethod('EFT');
       } else {
         const err = await response.json().catch(() => null);
         alert(err?.message || `Failed to submit order. Please WhatsApp us at +27 79 692 9591 if this continues.`);
@@ -162,9 +181,23 @@ export const Order = () => {
           </div>
         )}
 
-        <div className="order-total-row" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.1rem', padding: '14px 0 4px' }}>
+        <div className="order-total-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', fontSize: '0.9rem', color: '#666' }}>
+          <span>Subtotal</span>
+          <span>R{cartTotal}</span>
+        </div>
+        
+        {fulfilmentType === 'Delivery' && (
+          <div className="order-total-row" style={{ display: 'flex', justifyContent: 'space-between', padding: '4px 0', fontSize: '0.9rem', color: '#666' }}>
+            <span>Delivery Fee</span>
+            <span>R{distanceKm && !isNaN(parseFloat(distanceKm)) ? 100 + Math.ceil(parseFloat(distanceKm) / 200) * 50 : 0}</span>
+          </div>
+        )}
+
+        <div className="order-total-row" style={{ display: 'flex', justifyContent: 'space-between', fontWeight: 700, fontSize: '1.1rem', padding: '14px 0 4px', borderTop: '1px solid var(--cream-line, #e8e0d4)', marginTop: '8px' }}>
           <span>Total</span>
-          <span id="orderSummaryTotal">R{cartTotal}</span>
+          <span id="orderSummaryTotal">
+            R{cartTotal + (fulfilmentType === 'Delivery' && distanceKm && !isNaN(parseFloat(distanceKm)) ? 100 + Math.ceil(parseFloat(distanceKm) / 200) * 50 : 0)}
+          </span>
         </div>
       </div>
 
@@ -197,11 +230,28 @@ export const Order = () => {
                 </div>
               </div>
 
-              {fulfilmentType === 'Delivery' && <div className="field full" id="orderAddressField">
-                <label htmlFor="od-address">Delivery address</label>
-                <input id="od-address" name="address" type="text" placeholder="Street, suburb, town" />
-                {errors.address && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.address}</span>}
-              </div>}
+              {fulfilmentType === 'Delivery' && (
+                <>
+                  <div className="field full" id="orderAddressField">
+                    <label htmlFor="od-address">Delivery Address</label>
+                    <input id="od-address" name="address" type="text" placeholder="Full street address" />
+                    {errors.address && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.address}</span>}
+                  </div>
+                  <div className="field full" id="orderDistanceField">
+                    <label htmlFor="od-distanceKm">Distance to venue (km)</label>
+                    <input id="od-distanceKm" name="distanceKm" type="number" step="0.1" min="0" placeholder="e.g. 15" value={distanceKm} onChange={(e) => setDistanceKm(e.target.value)} />
+                    {errors.distanceKm && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.distanceKm}</span>}
+                  </div>
+                </>
+              )}
+
+              <div className="field full">
+                <label>Payment Method</label>
+                <div className="radio-row">
+                  <label className="radio-opt"><input type="radio" name="paymentMethod" value="EFT" checked={paymentMethod === 'EFT'} onChange={() => setPaymentMethod('EFT')} /> Manual EFT</label>
+                  <label className="radio-opt"><input type="radio" name="paymentMethod" value="Online" checked={paymentMethod === 'Online'} onChange={() => setPaymentMethod('Online')} /> Online Payment (Paystack)</label>
+                </div>
+              </div>
 
               <div className="field"><label htmlFor="od-date">Needed by (date)</label><input id="od-date" name="date" type="date" min={minimumDate} />{errors.date && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.date}</span>}</div>
               <div className="field"><label htmlFor="od-time">Preferred time</label><input id="od-time" name="time" type="time" /></div>

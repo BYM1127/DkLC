@@ -16,6 +16,7 @@ const bookingSchema = z.object({
 export const Book = () => {
   const [errors, setErrors] = useState<Record<string, string>>({});
   const [submitting, setSubmitting] = useState(false);
+  const [ingredientSourcing, setIngredientSourcing] = useState('DkLC Provides Ingredients');
 
   const minimumDate = new Date(Date.now() + 72 * 60 * 60 * 1000).toISOString().slice(0, 10);
 
@@ -49,6 +50,9 @@ export const Book = () => {
       estimatedGuests: Number(dataObj.guests) || null,
       preferredPackage: dataObj.package,
       fulfilmentType: dataObj.fulfil ? 'Delivery' : 'Collection',
+      ingredientSourcing: ingredientSourcing,
+      estimatedHours: dataObj.estimatedHours ? Number(dataObj.estimatedHours) : null,
+      staffHourlyRate: dataObj.staffHourlyRate || '',
       notes: dataObj.notes
     };
 
@@ -100,6 +104,31 @@ export const Book = () => {
               <input id="bk-phone" name="phone" type="tel" placeholder="+27 ..." />
               {errors.phone && <span style={{ color: 'red', fontSize: '0.8rem' }}>{errors.phone}</span>}
             </div>
+            <div className="field full">
+              <label>Ingredient Sourcing</label>
+              <div className="radio-row">
+                <label className="radio-opt"><input type="radio" name="sourcing" value="DkLC Provides Ingredients" checked={ingredientSourcing === 'DkLC Provides Ingredients'} onChange={() => setIngredientSourcing('DkLC Provides Ingredients')} /> DkLC Provides Ingredients (Turnkey)</label>
+                <label className="radio-opt"><input type="radio" name="sourcing" value="Client Provides Ingredients" checked={ingredientSourcing === 'Client Provides Ingredients'} onChange={() => setIngredientSourcing('Client Provides Ingredients')} /> Client Provides Ingredients (Labor Only)</label>
+              </div>
+            </div>
+
+            {ingredientSourcing === 'Client Provides Ingredients' && (
+              <>
+                <div className="field">
+                  <label htmlFor="bk-estimatedHours">Estimated Event Hours</label>
+                  <input id="bk-estimatedHours" name="estimatedHours" type="number" min="1" placeholder="e.g., 6" />
+                </div>
+                <div className="field">
+                  <label htmlFor="bk-staffRate">Staff Hourly Rate Option</label>
+                  <select id="bk-staffRate" name="staffHourlyRate">
+                    <option value="">Select a rate</option>
+                    <option value="R150/hr (Standard Staff)">R150/hr (Standard Staff)</option>
+                    <option value="R350/hr (Head Chef)">R350/hr (Head Chef)</option>
+                  </select>
+                </div>
+              </>
+            )}
+
             <div className="field full">
               <label htmlFor="bk-email">Email address</label>
               <input id="bk-email" name="email" type="email" placeholder="you@example.com" />

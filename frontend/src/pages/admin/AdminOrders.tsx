@@ -25,6 +25,10 @@ interface Order {
   totalAmount: number;
   couponApplied: string;
   status: string;
+  paymentMethod: string;
+  paymentStatus: string;
+  deliveryFee: number;
+  distanceKm: number;
   createdAt: string;
   items: OrderItem[];
 }
@@ -65,6 +69,20 @@ export const AdminOrders = () => {
       }
     } catch (err) {
       console.error('Failed to update status:', err);
+    }
+  };
+
+  const updatePaymentStatus = async (orderId: number, newStatus: string) => {
+    try {
+      const res = await fetchWithAuth(`/api/admin/orders/${orderId}/paymentStatus`, {
+        method: 'PUT',
+        body: JSON.stringify({ paymentStatus: newStatus }),
+      });
+      if (res.ok) {
+        setOrders(prev => prev.map(o => o.id === orderId ? { ...o, paymentStatus: newStatus } : o));
+      }
+    } catch (err) {
+      console.error('Failed to update payment status:', err);
     }
   };
 
@@ -178,6 +196,7 @@ export const AdminOrders = () => {
                             {order.deliveryAddress && (
                               <div>
                                 <strong>Delivery Address:</strong> {order.deliveryAddress}
+                                {order.distanceKm > 0 && <span> ({order.distanceKm} km)</span>}
                               </div>
                             )}
                             {order.couponApplied && (
@@ -185,6 +204,21 @@ export const AdminOrders = () => {
                                 <strong>Coupon:</strong> {order.couponApplied} (−R{order.discountAmount?.toFixed(2)})
                               </div>
                             )}
+                            <div>
+                              <strong>Payment Method:</strong> {order.paymentMethod}
+                            </div>
+                            <div>
+                              <strong>Payment Status:</strong>{' '}
+                              <select
+                                style={{ background: 'var(--surface-2)', border: '1px solid var(--border)', borderRadius: '4px', fontSize: '0.8rem', padding: '2px 4px' }}
+                                value={order.paymentStatus}
+                                onChange={e => updatePaymentStatus(order.id, e.target.value)}
+                              >
+                                <option value="Pending">Pending</option>
+                                <option value="Paid">Paid</option>
+                                <option value="Failed">Failed</option>
+                              </select>
+                            </div>
                             {order.notes && (
                               <div className="admin-detail-full">
                                 <strong>Notes:</strong> {order.notes}
@@ -223,6 +257,9 @@ export const AdminOrders = () => {
                                   <div><span>Subtotal:</span> <span>R{order.originalAmount?.toFixed(2)}</span></div>
                                   <div className="admin-discount"><span>Discount:</span> <span>−R{order.discountAmount?.toFixed(2)}</span></div>
                                 </>
+                              )}
+                              {order.deliveryFee > 0 && (
+                                <div><span>Delivery Fee:</span> <span>R{order.deliveryFee?.toFixed(2)}</span></div>
                               )}
                               <div className="admin-grand-total"><span>Total:</span> <span>R{order.totalAmount?.toFixed(2)}</span></div>
                             </div>

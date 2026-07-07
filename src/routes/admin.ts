@@ -118,6 +118,10 @@ router.get('/orders', async (req: Request, res: Response) => {
       discountAmount: o.discountAmount,
       totalAmount: o.totalAmount,
       couponApplied: o.couponApplied,
+      paymentMethod: o.paymentMethod,
+      paymentStatus: o.paymentStatus,
+      deliveryFee: o.deliveryFee,
+      distanceKm: o.distanceKm,
       status: o.status,
       createdAt: o.createdAt,
       items: o.orderItems.map(i => ({
@@ -159,7 +163,36 @@ router.put('/orders/:id/status', async (req: Request, res: Response) => {
 
     return res.status(200).json({ success: true, status: order.status });
   } catch (error) {
-    console.error('Error updating order status:', error);
+    console.error('[Admin] Error updating order status:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// PUT /api/admin/orders/:id/paymentStatus
+router.put('/orders/:id/paymentStatus', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { paymentStatus } = req.body;
+
+    if (!paymentStatus) {
+      return res.status(400).json({ message: 'Payment status is required.' });
+    }
+
+    const orderRepo = AppDataSource.getRepository(Order);
+    const order = await orderRepo.findOne({
+      where: { id: parseInt(id, 10) },
+    });
+
+    if (!order) {
+      return res.status(404).json({ message: 'Order not found.' });
+    }
+
+    order.paymentStatus = paymentStatus;
+    await orderRepo.save(order);
+
+    return res.status(200).json({ success: true, paymentStatus: order.paymentStatus });
+  } catch (error) {
+    console.error('[Admin] Error updating payment status:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

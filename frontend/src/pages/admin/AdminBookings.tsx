@@ -12,6 +12,9 @@ interface Booking {
   estimatedGuests: number | null;
   preferredPackage: string;
   fulfilmentType: string;
+  ingredientSourcing: string;
+  estimatedHours: number | null;
+  staffHourlyRate: string;
   notes: string;
   status: string;
   createdAt: string;
@@ -162,6 +165,15 @@ export const AdminBookings = () => {
                             <div>
                               <strong>Fulfilment:</strong> {booking.fulfilmentType || '—'}
                             </div>
+                            {booking.ingredientSourcing === 'Client Provides Ingredients' ? (
+                              <>
+                                <div className="admin-detail-item"><strong>Ingredient Sourcing:</strong> {booking.ingredientSourcing}</div>
+                                <div className="admin-detail-item"><strong>Est. Hours:</strong> {booking.estimatedHours}</div>
+                                <div className="admin-detail-item"><strong>Staff Rate:</strong> {booking.staffHourlyRate}</div>
+                              </>
+                            ) : (
+                              <div className="admin-detail-item"><strong>Ingredient Sourcing:</strong> {booking.ingredientSourcing || 'DkLC Provides Ingredients'}</div>
+                            )}
                             {booking.notes && (
                               <div className="admin-detail-full">
                                 <strong>Notes:</strong> {booking.notes}
@@ -190,6 +202,11 @@ export const AdminBookings = () => {
           entityType="booking"
           entityId={quoteTarget.id}
           fetchWithAuth={fetchWithAuth}
+          ingredientSourcing={quoteTarget.ingredientSourcing}
+          estimatedHours={quoteTarget.estimatedHours || 0}
+          staffHourlyRate={quoteTarget.staffHourlyRate}
+          estimatedGuests={quoteTarget.estimatedGuests || 0}
+          preferredPackage={quoteTarget.preferredPackage}
         />
       )}
     </div>
