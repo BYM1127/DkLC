@@ -22,9 +22,9 @@ app.use((req, res, next) => {
     return next();
   }
   
-  express.json()(req, res, (err) => {
+  express.json({ limit: '50mb' })(req, res, (err) => {
     if (err) return next(err);
-    express.urlencoded({ extended: true })(req, res, next);
+    express.urlencoded({ extended: true, limit: '50mb' })(req, res, next);
   });
 });
 

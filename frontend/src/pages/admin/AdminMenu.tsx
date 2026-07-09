@@ -1,6 +1,7 @@
 import { useState, useEffect } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { Plus, Edit2, Trash2, X } from 'lucide-react';
+import { compressImage } from '../../utils/imageCompression';
 
 interface MenuItem {
   id: number;
@@ -43,14 +44,16 @@ export const AdminMenu = () => {
     fetchItems();
   }, [fetchWithAuth]);
 
-  const handleImageUpload = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const handleImageUpload = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const file = e.target.files?.[0];
     if (file) {
-      const reader = new FileReader();
-      reader.onloadend = () => {
-        setFormData(prev => ({ ...prev, imageBase64: reader.result as string }));
-      };
-      reader.readAsDataURL(file);
+      try {
+        const compressedBase64 = await compressImage(file);
+        setFormData(prev => ({ ...prev, imageBase64: compressedBase64 }));
+      } catch (err) {
+        console.error('Failed to compress image:', err);
+        alert('Failed to process image. Please try another one.');
+      }
     }
   };
 
