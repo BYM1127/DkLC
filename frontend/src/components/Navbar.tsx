@@ -1,6 +1,6 @@
 import { useState, useEffect } from 'react';
 import { Link, useLocation } from 'react-router-dom';
-import { Home, Info, Utensils, Image, Phone, Menu as MenuIcon, X } from 'lucide-react';
+import { Home, Utensils, Image, Phone, Menu as MenuIcon, X } from 'lucide-react';
 
 export const Navbar = () => {
   const [menuOpen, setMenuOpen] = useState(false);

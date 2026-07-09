@@ -132,7 +132,6 @@ export const AdminContacts = () => {
           customerName={replyTarget.name}
           customerPhone={replyTarget.phone || ''}
           customerEmail={replyTarget.email || ''}
-          entityType="contact"
           entityId={replyTarget.id}
           fetchWithAuth={fetchWithAuth}
         />

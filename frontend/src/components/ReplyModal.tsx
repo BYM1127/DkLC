@@ -6,7 +6,6 @@ interface ReplyModalProps {
   customerName: string;
   customerPhone: string;
   customerEmail: string;
-  entityType: 'contact' | 'quote';
   entityId: number;
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
 }
@@ -17,7 +16,6 @@ export const ReplyModal = ({
   customerName,
   customerPhone,
   customerEmail,
-  entityType,
   entityId,
   fetchWithAuth,
 }: ReplyModalProps) => {
