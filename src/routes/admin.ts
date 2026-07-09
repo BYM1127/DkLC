@@ -63,6 +63,11 @@ router.get('/debug-orders', async (req: Request, res: Response) => {
 
 // ── Auth middleware (applied to all routes below) ─────────────────────────
 router.use((req: Request, res: Response, next) => {
+  // Prevent browser caching of admin data
+  res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
+  res.setHeader('Pragma', 'no-cache');
+  res.setHeader('Expires', '0');
+
   // In non-serverless dev with no credentials set, allow through
   const emailSet = !!process.env.ADMIN_EMAIL;
   const passwordSet = !!process.env.ADMIN_PASSWORD;
