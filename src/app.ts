@@ -11,12 +11,16 @@ export const app: Express = express();
 
 app.use(cors());
 
-// Vercel serverless functions already parse the body.
-// If we run express.json() when Vercel already parsed it, it will hang the request forever!
 app.use((req, res, next) => {
-  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+  if (process.env.VERCEL) {
+    if (Buffer.isBuffer(req.body)) {
+      try { req.body = JSON.parse(req.body.toString('utf-8')); } catch(e) {}
+    } else if (typeof req.body === 'string') {
+      try { req.body = JSON.parse(req.body); } catch(e) {}
+    }
     return next();
   }
+  
   express.json()(req, res, (err) => {
     if (err) return next(err);
     express.urlencoded({ extended: true })(req, res, next);
