@@ -171,7 +171,7 @@ export const AppDataSource = {
   },
 };
 
-const seedSiteSettings = async () => {
+const seedDatabase = async () => {
   const settingsRepo = AppDataSource.getRepository(SiteSettings);
   const existingSettings = await settingsRepo.find();
 
@@ -186,6 +186,31 @@ const seedSiteSettings = async () => {
     }));
     console.log('Seeded initial site settings');
   }
+
+  const menuRepo = AppDataSource.getRepository(MenuItem);
+  const existingMenu = await menuRepo.find();
+  
+  if (existingMenu.length === 0) {
+    await menuRepo.save([
+      menuRepo.create({ name: 'Traditional Beef Stew', description: 'Slow-cooked beef stew with carrots and potatoes, served with pap.', price: 85, category: 'Mains', imageBase64: '', isActive: true }),
+      menuRepo.create({ name: 'Grilled Quarter Chicken', description: 'Flame-grilled quarter chicken with our signature basting, served with a side of chakalaka.', price: 75, category: 'Mains', imageBase64: '', isActive: true }),
+      menuRepo.create({ name: 'Creamy Spinach & Butternut', description: 'Fresh spinach cooked in a creamy sauce, paired with roasted butternut.', price: 45, category: 'Sides', imageBase64: '', isActive: true }),
+      menuRepo.create({ name: 'Malva Pudding', description: 'Warm traditional South African dessert served with custard.', price: 55, category: 'Desserts', imageBase64: '', isActive: true }),
+    ]);
+    console.log('Seeded initial menu items');
+  }
+
+  const galleryRepo = AppDataSource.getRepository(GalleryImage);
+  const existingGallery = await galleryRepo.find();
+
+  if (existingGallery.length === 0) {
+    await galleryRepo.save([
+      galleryRepo.create({ eventName: 'Limpopo Traditional Wedding', description: 'Catering for 200 guests with a full traditional menu.', imageBase64: '' }),
+      galleryRepo.create({ eventName: 'Corporate Year-End Function', description: 'Buffet setup for a corporate event in Gauteng.', imageBase64: '' }),
+      galleryRepo.create({ eventName: 'Family Reunion Picnic', description: 'Outdoor catering setup with spitbraai and salads.', imageBase64: '' }),
+    ]);
+    console.log('Seeded initial gallery images');
+  }
 };
 
 export const initializeDatabase = async () => {
@@ -194,7 +219,7 @@ export const initializeDatabase = async () => {
       console.log('Connecting to MongoDB Atlas database', mongoDbName);
       await AppDataSource.initialize();
       console.log('Database connection established');
-      await seedSiteSettings();
+      await seedDatabase();
     }
   } catch (error) {
     console.error('Database connection failed:', error);
