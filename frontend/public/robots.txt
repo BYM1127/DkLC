@@ -1,0 +1,4 @@
+User-agent: *
+Allow: /
+
+Sitemap: https://dimphokelesegocatering.vercel.app/sitemap.xml

@@ -315,9 +315,28 @@ footer h4 { font-family: var(--body); color: white; font-size: 1rem; text-transf
 .btn-whatsapp { background: #25D366; color: white; border: 1px solid #25D366; }
 .btn-whatsapp:hover { background: #1EBE5D; }
 
-/* ============================================================
-   ADMIN PANEL STYLES (Light Theme)
-   ============================================================ */
+/* ==========================================================================
+   LEGAL PAGES
+   ========================================================================== */
+.legal-page { background-color: var(--bg-alt); padding: 80px 20px; min-height: 100vh; }
+.legal-container { max-width: 850px; margin: 0 auto; background-color: #ffffff; padding: 60px 80px; border-radius: var(--radius); box-shadow: var(--shadow-lg); border: 1px solid var(--border-subtle); }
+.legal-header { text-align: center; border-bottom: 2px solid var(--border-subtle); padding-bottom: 30px; margin-bottom: 40px; }
+.legal-header h1 { font-size: 2.8rem; color: var(--text-main); font-family: var(--display); margin: 0; }
+.legal-header p { margin-top: 16px; color: var(--text-muted); font-size: 0.9rem; text-transform: uppercase; letter-spacing: 2px; }
+.legal-content { line-height: 1.9; color: var(--ink-soft); font-size: 1.05rem; text-align: justify; }
+.legal-content h2 { font-family: var(--display); color: var(--text-main); font-size: 1.5rem; margin-top: 40px; margin-bottom: 16px; }
+.legal-content p { margin-bottom: 16px; }
+
+@media (max-width: 768px) {
+  .legal-page { padding: 40px 16px; }
+  .legal-container { padding: 40px 24px; }
+  .legal-header h1 { font-size: 2rem; }
+  .legal-content { text-align: left; }
+}
+
+/* ==========================================================================
+   ADMIN DASHBOARD BASE
+   ========================================================================== */
 .admin-login-page { min-height: 100vh; display: flex; align-items: center; justify-content: center; background: var(--bg-alt); padding: 24px; }
 .admin-login-card { width: 100%; max-width: 440px; background: white; border: 1px solid var(--border-subtle); border-radius: var(--radius); box-shadow: var(--shadow-lg); overflow: hidden; }
 .admin-login-header { padding: 40px 32px 32px; text-align: center; border-bottom: 1px solid var(--border-subtle); }

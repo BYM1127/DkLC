@@ -8,9 +8,12 @@ type LegalPageProps = {
 export const LegalPage: React.FC<LegalPageProps> = ({ title, content }) => {
   return (
     <div className="legal-page">
-      <div className="container" style={{ padding: '80px 20px', maxWidth: '800px', margin: '0 auto' }}>
-        <h1 style={{ fontSize: '2.5rem', marginBottom: '40px', color: 'var(--text-main)' }}>{title}</h1>
-        <div className="legal-content" style={{ lineHeight: '1.8', color: 'var(--ink-soft)' }}>
+      <div className="container legal-container">
+        <div className="legal-header">
+          <h1>{title}</h1>
+          <p>Dimpho ke Lesego Catering</p>
+        </div>
+        <div className="legal-content">
           {content}
         </div>
       </div>
