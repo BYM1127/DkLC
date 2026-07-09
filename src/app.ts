@@ -10,8 +10,18 @@ import { setupSwagger } from './swagger';
 export const app: Express = express();
 
 app.use(cors());
-app.use(express.json());
-app.use(express.urlencoded({ extended: true }));
+
+// Vercel serverless functions already parse the body.
+// If we run express.json() when Vercel already parsed it, it will hang the request forever!
+app.use((req, res, next) => {
+  if (req.body && typeof req.body === 'object' && !Buffer.isBuffer(req.body)) {
+    return next();
+  }
+  express.json()(req, res, (err) => {
+    if (err) return next(err);
+    express.urlencoded({ extended: true })(req, res, next);
+  });
+});
 
 const wwwrootPath = path.join(__dirname, '..', 'frontend', 'dist');
 app.use(express.static(wwwrootPath));
