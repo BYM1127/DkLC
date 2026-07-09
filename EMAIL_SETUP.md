@@ -76,10 +76,10 @@ The Dimpho ke Lesego Catering website has a comprehensive email system that send
    # Email Configuration
    SMTP_HOST=smtp.gmail.com
    SMTP_PORT=587
-   SMTP_USER=dimphokelesego@gmail.com
+   SMTP_USER=dimphokelesegocatering@gmail.com
    SMTP_PASSWORD=xxxx xxxx xxxx xxxx
    SMTP_FROM=noreply@dimphokelesego.com
-   ADMIN_EMAIL=dimphokelesego@gmail.com
+   ADMIN_EMAIL=dimphokelesegocatering@gmail.com
    ```
 
 ### Step 3: Verify Email Setup

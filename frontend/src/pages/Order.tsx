@@ -400,7 +400,7 @@ export const Order = () => {
           </form>
         )}
 
-        <p className="field-help" style={{ marginTop: '18px' }}>Prefer to talk it through? Call or WhatsApp <strong>+27 79 692 9591</strong> or email <strong>dimphokelesego@gmail.com</strong>. For full event planning, you can also <Link to="/book" style={{ color: 'var(--gold-deep)', textDecoration: 'underline' }}>submit an event enquiry</Link> instead.</p>
+        <p className="field-help" style={{ marginTop: '18px' }}>Prefer to talk it through? Call or WhatsApp <strong>+27 79 692 9591</strong> or email <strong>dimphokelesegocatering@gmail.com</strong>. For full event planning, you can also <Link to="/book" style={{ color: 'var(--gold-deep)', textDecoration: 'underline' }}>submit an event enquiry</Link> instead.</p>
       </div>
     </div>
   </section>

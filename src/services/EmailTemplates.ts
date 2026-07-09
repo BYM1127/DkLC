@@ -114,7 +114,7 @@ export class EmailTemplates {
       <p>&copy; 2026 Dimpho ke Lesego Catering Services.<br>
       Phaphadi, Mamaila Village, 0832<br>
       <strong>Phone:</strong> +27 79 692 9591<br>
-      <strong>Email:</strong> dimphokelesego@gmail.com</p>
+      <strong>Email:</strong> dimphokelesegocatering@gmail.com</p>
     </div>`;
   }
 

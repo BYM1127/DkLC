@@ -74,7 +74,7 @@ export const Contact = () => {
             <h2>Dimpho ke Lesego Catering Services</h2>
             <p className="lead">For orders, event bookings, delivery questions, or custom menus, contact us by phone, WhatsApp, email, or the form.</p>
             <p><strong>Phone / WhatsApp:</strong> <a href="tel:+27796929591">+27 79 692 9591</a></p>
-            <p><strong>Email:</strong> <a href="mailto:dimphokelesego@gmail.com">dimphokelesego@gmail.com</a></p>
+            <p><strong>Email:</strong> <a href="mailto:dimphokelesegocatering@gmail.com">dimphokelesegocatering@gmail.com</a></p>
             <p><strong>Location:</strong> Phaphadi, South Africa</p>
           </div>
 

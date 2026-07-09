@@ -93,7 +93,7 @@ REM Get admin email
 echo.
 set /p admin_email="Enter admin email for notifications (or press Enter for default): "
 if "!admin_email!"=="" (
-    set admin_email=dimphokelesego@gmail.com
+    set admin_email=dimphokelesegocatering@gmail.com
 )
 
 REM Create or update .env file
@@ -113,7 +113,7 @@ REM Update .env with values
             echo SMTP_USER=!smtp_user!
         ) else if "%%i"=="SMTP_PASSWORD=your-app-password" (
             echo SMTP_PASSWORD=!smtp_password!
-        ) else if "%%i"=="ADMIN_EMAIL=dimphokelesego@gmail.com" (
+        ) else if "%%i"=="ADMIN_EMAIL=dimphokelesegocatering@gmail.com" (
             echo ADMIN_EMAIL=!admin_email!
         ) else (
             echo %%i

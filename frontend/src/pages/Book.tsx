@@ -166,7 +166,7 @@ export const Book = () => {
           <button type="submit" className="btn btn-primary" style={{ marginTop: '22px', width: '100%', justifyContent: 'center' }} disabled={submitting}>{submitting ? 'Sending Request...' : 'Send Booking Request'}</button>
           <div className="confirm-msg" id="bookConfirm">Thank you — your booking request has been received. We'll contact you within 24 hours at the phone or email you provided.</div>
         </form>
-        <p className="field-help" style={{ marginTop: '18px' }}>Prefer to talk it through? Call or WhatsApp <strong>+27 79 692 9591</strong> or email <strong>dimphokelesego@gmail.com</strong>.</p>
+        <p className="field-help" style={{ marginTop: '18px' }}>Prefer to talk it through? Call or WhatsApp <strong>+27 79 692 9591</strong> or email <strong>dimphokelesegocatering@gmail.com</strong>.</p>
       </div>
     </div>
   </section>
