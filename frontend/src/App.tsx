@@ -8,6 +8,7 @@ import { Gallery } from './pages/Gallery';
 import { Contact } from './pages/Contact';
 import { Quote } from './pages/Quote';
 import { BuildMenu } from './pages/BuildMenu';
+import { PrivacyPolicy, TermsAndConditions, RefundPolicy, AccessibilityStatement } from './pages/Legal';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminLogin } from './pages/admin/AdminLogin';
@@ -72,6 +73,12 @@ function App() {
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/quote" element={<PublicLayout><Quote /></PublicLayout>} />
+        
+        {/* Legal Routes */}
+        <Route path="/privacy-policy" element={<PublicLayout><PrivacyPolicy /></PublicLayout>} />
+        <Route path="/accessibility" element={<PublicLayout><AccessibilityStatement /></PublicLayout>} />
+        <Route path="/terms" element={<PublicLayout><TermsAndConditions /></PublicLayout>} />
+        <Route path="/refund-policy" element={<PublicLayout><RefundPolicy /></PublicLayout>} />
 
         {/* Admin routes — own layout, no public Navbar/Footer */}
         <Route path="/admin/login" element={

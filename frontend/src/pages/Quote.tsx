@@ -56,6 +56,9 @@ export const Quote = () => {
         <div className="wrap" style={{ maxWidth: '600px', margin: '0 auto', background: 'white', padding: '60px 40px', borderRadius: 'var(--radius)', border: '1px solid var(--border-subtle)', boxShadow: 'var(--shadow-lg)' }}>
           <h2 style={{ color: 'var(--burgundy)', marginBottom: '16px', fontFamily: 'var(--display)' }}>Quote Request Received</h2>
           <p style={{ fontSize: '1.1rem', marginBottom: '30px', color: 'var(--text-muted)' }}>Thank you, {formData.name}. We have received your details and will get back to you shortly with a personalized quote for your event at {formData.venueLocation || 'your venue'}.</p>
+          <div style={{ marginBottom: '30px', padding: '16px', background: 'var(--bg-alt)', borderRadius: 'var(--radius-sm)', fontSize: '0.9rem' }}>
+            While you wait, please familiarize yourself with our <Link to="/refund-policy" style={{ textDecoration: 'underline', color: 'var(--text-main)', fontWeight: 600 }}>Refund Policy</Link> and <Link to="/terms" style={{ textDecoration: 'underline', color: 'var(--text-main)', fontWeight: 600 }}>Terms & Conditions</Link>.
+          </div>
           <Link to="/" className="btn btn-outline" style={{ color: 'var(--text-main)', borderColor: 'var(--text-main)' }}>Return to Home</Link>
         </div>
       </section>
@@ -170,7 +173,10 @@ export const Quote = () => {
 
             </div>
 
-            <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid var(--border-subtle)', textAlign: 'right' }}>
+            <div style={{ marginTop: '48px', paddingTop: '32px', borderTop: '1px solid var(--border-subtle)', display: 'flex', flexDirection: 'column', alignItems: 'flex-end', gap: '16px' }}>
+              <div style={{ fontSize: '0.85rem', color: 'var(--text-muted)' }}>
+                By submitting this quote request, you agree to our <Link to="/refund-policy" style={{ textDecoration: 'underline', color: 'var(--text-main)' }}>Refund Policy</Link> and <Link to="/terms" style={{ textDecoration: 'underline', color: 'var(--text-main)' }}>Terms & Conditions</Link>.
+              </div>
               <button type="submit" className="btn btn-primary" style={{ padding: '16px 48px', fontSize: '1rem' }} disabled={status === 'submitting'}>
                 {status === 'submitting' ? 'Submitting...' : 'Request Quote'}
               </button>

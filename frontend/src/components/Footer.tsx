@@ -21,10 +21,10 @@ export const Footer = () => {
       </div>
       <div>
         <h4>Legal</h4>
-        <a href="#" className="footer-link">Privacy Policy</a>
-        <a href="#" className="footer-link">Accessibility Statement</a>
-        <a href="#" className="footer-link">Terms & Conditions</a>
-        <a href="#" className="footer-link">Refund Policy</a>
+        <Link to="/privacy-policy" className="footer-link">Privacy Policy</Link>
+        <Link to="/accessibility" className="footer-link">Accessibility Statement</Link>
+        <Link to="/terms" className="footer-link">Terms & Conditions</Link>
+        <Link to="/refund-policy" className="footer-link">Refund Policy</Link>
       </div>
     </div>
     <div className="footer-bottom">
