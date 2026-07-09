@@ -47,20 +47,18 @@ export const Home = () => {
     <section className="page" data-page="home">
 
   <div className="hero">
-    <div className="wrap hero-grid">
-      <div>
-        <span className="eyebrow on-dark">Catering Services</span>
-        <h1>Delicious catering for your special event</h1>
-        <p className="lead">{aboutText}</p>
-        <div className="hero-ctas">
-          <Link to="/menu" className="btn btn-gold">View the Menu</Link>
-          <Link to="/quote" className="btn btn-outline on-dark">Get a Quote</Link>
-        </div>
-      </div>
-      <div className="hero-art">
-        <div className="ring-frame"><img src="https://images.unsplash.com/photo-1555244162-803834f80029?w=800&q=80" alt="Exquisite catering spread" style={{ height: '340px', width: '340px', objectFit: 'cover' }} /></div>
+    <img src="https://image.pollinations.ai/prompt/professional%20restaurant%20table%20authentic%20cuisine%20catering?width=1920&height=1080&nologo=true" alt="Elegant dining" className="hero-bg" />
+    <div className="hero-overlay"></div>
+    <div className="hero-content">
+      <span className="eyebrow">WELCOME TO DIMPHO KE LESEGO</span>
+      <h1>Authentic South African Cuisine</h1>
+      <p className="lead">Experience the finest traditional dishes, crafted with love and served with passion.</p>
+      <div className="hero-ctas">
+        <Link to="/contact" className="btn btn-primary">Get a Quote</Link>
+        <Link to="/menu" className="btn btn-outline">View Our Menu</Link>
       </div>
     </div>
+    <div className="scroll-indicator">↓</div>
   </div>
 
   <div className="motto-strip">
@@ -98,7 +96,7 @@ export const Home = () => {
   </section>
 
   {featuredItems.length > 0 && (
-    <section className="section" style={{ background: 'var(--cream-deep)', borderTop: '1px solid var(--cream-line)', borderBottom: '1px solid var(--cream-line)' }}>
+    <section className="section bg-alt">
       <div className="wrap" style={{ textAlign: 'center' }}>
         <span className="eyebrow">Crowd Favourites</span>
         <h2>A taste of the menu</h2>
