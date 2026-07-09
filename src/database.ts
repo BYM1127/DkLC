@@ -1,6 +1,6 @@
 import { setServers } from 'dns';
 import { Collection, Db, Filter, MongoClient } from 'mongodb';
-import { ContactMessage, QuoteRequest, BlockedDate, MenuItem, GalleryImage, SiteSettings } from './entities';
+import { ContactMessage, QuoteRequest, BlockedDate, MenuItem, GalleryImage, SiteSettings, PresetMenu } from './entities';
 
 type EntityCtor<T> = new () => T;
 type FindOptions<T> = {
@@ -25,6 +25,7 @@ const collectionNames = new Map<Function, string>([
   [MenuItem, 'menu_items'],
   [GalleryImage, 'gallery_images'],
   [SiteSettings, 'site_settings'],
+  [PresetMenu, 'preset_menus'],
 ]);
 
 let client: MongoClient | null = null;
@@ -210,6 +211,20 @@ const seedDatabase = async () => {
       galleryRepo.create({ eventName: 'Family Reunion Picnic', description: 'Outdoor catering setup with spitbraai and salads.', imageBase64: '' }),
     ]);
     console.log('Seeded initial gallery images');
+  }
+
+  const presetMenuRepo = AppDataSource.getRepository(PresetMenu);
+  const existingPresetMenus = await presetMenuRepo.find();
+
+  if (existingPresetMenus.length === 0) {
+    await presetMenuRepo.save([
+      presetMenuRepo.create({ name: 'The Royal African Feast', description: 'A lavish spread of traditional favorites designed for weddings and grand celebrations.', items: JSON.stringify(['Traditional Beef Stew', 'Creamy Spinach', 'Chakalaka', 'Dombolo (Dumplings)', 'Roasted Butternut', 'Malva Pudding']), imageBase64: '', isActive: true }),
+      presetMenuRepo.create({ name: 'Intimate Wedding Set', description: 'An elegant, curated 3-course menu perfect for smaller, refined gatherings.', items: JSON.stringify(['Smoked Salmon Blinis', 'Herb-Crusted Rack of Lamb', 'Garlic Mash', 'Seasonal Green Beans', 'Mini Pavlovas']), imageBase64: '', isActive: true }),
+      presetMenuRepo.create({ name: 'Corporate Lunch Spread', description: 'Light, energizing, and professional catering for seminars and corporate events.', items: JSON.stringify(['Gourmet Sandwiches Platter', 'Grilled Chicken Skewers', 'Quinoa Salad', 'Fresh Fruit Platter']), imageBase64: '', isActive: true }),
+      presetMenuRepo.create({ name: 'Classic Heritage Menu', description: 'The comforting, authentic taste of home. Perfect for family reunions or memorials.', items: JSON.stringify(['Hard Body Chicken', 'Pap', 'Morogo', 'Beetroot Salad', 'Ginger Beer']), imageBase64: '', isActive: true }),
+      presetMenuRepo.create({ name: 'The Grand Buffet', description: 'A sprawling selection to satisfy every palate, offering a mix of modern and traditional.', items: JSON.stringify(['Beef Curry', 'Lemon Herb Fish', 'Savoury Rice', 'Creamy Potato Salad', 'Greek Salad', 'Trifle']), imageBase64: '', isActive: true }),
+    ]);
+    console.log('Seeded initial preset menus');
   }
 };
 

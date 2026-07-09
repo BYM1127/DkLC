@@ -14,6 +14,7 @@ import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
 import { AdminQuotes } from './pages/admin/AdminQuotes';
 import { AdminMenu } from './pages/admin/AdminMenu';
+import { AdminPresetMenus } from './pages/admin/AdminPresetMenus';
 import { AdminGallery } from './pages/admin/AdminGallery';
 import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminContacts } from './pages/admin/AdminContacts';
@@ -86,6 +87,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="quotes" element={<AdminQuotes />} />
           <Route path="menu" element={<AdminMenu />} />
+          <Route path="preset-menus" element={<AdminPresetMenus />} />
           <Route path="portfolio" element={<AdminGallery />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="contacts" element={<AdminContacts />} />

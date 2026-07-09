@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { AppDataSource } from '../database';
-import { ContactMessage, QuoteRequest, MenuItem, GalleryImage, SiteSettings } from '../entities';
+import { ContactMessage, QuoteRequest, MenuItem, GalleryImage, SiteSettings, PresetMenu } from '../entities';
 import { EmailService } from '../services/EmailService';
 import { isServerlessRuntime } from '../runtime';
 
@@ -212,6 +212,64 @@ router.delete('/menu/:id', async (req: Request, res: Response) => {
     return res.status(200).json({ success: true });
   } catch (error) {
     console.error('Error deleting menu item:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// === PRESET MENU MANAGEMENT ===
+router.get('/preset-menus', async (req: Request, res: Response) => {
+  try {
+    const repo = AppDataSource.getRepository(PresetMenu);
+    const menus = await repo.find();
+    return res.status(200).json(menus);
+  } catch (error) {
+    console.error('Error fetching preset menus:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.post('/preset-menus', async (req: Request, res: Response) => {
+  try {
+    const { name, description, items, imageBase64, isActive } = req.body;
+    const repo = AppDataSource.getRepository(PresetMenu);
+    const preset = repo.create({
+      name, description, items: JSON.stringify(items), imageBase64, isActive
+    });
+    await repo.save(preset);
+    return res.status(200).json({ success: true, id: preset.id });
+  } catch (error) {
+    console.error('Error creating preset menu:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.put('/preset-menus/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { name, description, items, imageBase64, isActive } = req.body;
+    const repo = AppDataSource.getRepository(PresetMenu);
+    const preset = await repo.findOne({ where: { id: parseInt(id, 10) } });
+    
+    if (!preset) return res.status(404).json({ message: 'Preset menu not found' });
+
+    Object.assign(preset, { name, description, items: JSON.stringify(items), imageBase64, isActive });
+    await repo.save(preset);
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error updating preset menu:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.delete('/preset-menus/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const repo = AppDataSource.getRepository(PresetMenu);
+    const collection = (repo as any).collection;
+    await collection.deleteOne({ id: parseInt(id, 10) });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error deleting preset menu:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

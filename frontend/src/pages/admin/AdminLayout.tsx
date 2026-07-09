@@ -34,6 +34,10 @@ export const AdminLayout = () => {
             <span className="admin-nav-icon">🍽️</span>
             Menu Items
           </NavLink>
+          <NavLink to="/admin/preset-menus" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+            <span className="admin-nav-icon">📋</span>
+            Preset Menus
+          </NavLink>
           <NavLink to="/admin/portfolio" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
             <span className="admin-nav-icon">🖼️</span>
             Portfolio

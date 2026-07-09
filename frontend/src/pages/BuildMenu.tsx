@@ -10,44 +10,39 @@ type MenuItemProps = {
   imageBase64: string;
 };
 
-const PRESET_MENUS = [
-  {
-    name: "The Royal African Feast",
-    description: "A lavish spread of traditional favorites designed for weddings and grand celebrations.",
-    items: ["Traditional Beef Stew", "Creamy Spinach", "Chakalaka", "Dombolo (Dumplings)", "Roasted Butternut", "Malva Pudding"],
-  },
-  {
-    name: "Intimate Wedding Set",
-    description: "An elegant, curated 3-course menu perfect for smaller, refined gatherings.",
-    items: ["Smoked Salmon Blinis", "Herb-Crusted Rack of Lamb", "Garlic Mash", "Seasonal Green Beans", "Mini Pavlovas"],
-  },
-  {
-    name: "Corporate Lunch Spread",
-    description: "Light, energizing, and professional catering for seminars and corporate events.",
-    items: ["Gourmet Sandwiches Platter", "Grilled Chicken Skewers", "Quinoa Salad", "Fresh Fruit Platter"],
-  },
-  {
-    name: "Classic Heritage Menu",
-    description: "The comforting, authentic taste of home. Perfect for family reunions or memorials.",
-    items: ["Hard Body Chicken", "Pap", "Morogo", "Beetroot Salad", "Ginger Beer"],
-  },
-  {
-    name: "The Grand Buffet",
-    description: "A sprawling selection to satisfy every palate, offering a mix of modern and traditional.",
-    items: ["Beef Curry", "Lemon Herb Fish", "Savoury Rice", "Creamy Potato Salad", "Greek Salad", "Trifle"],
-  }
-];
+type PresetMenuProps = {
+  id: number;
+  name: string;
+  description: string;
+  items: string; // JSON string
+  imageBase64: string;
+};
 
 export const BuildMenu = () => {
   const [activeTab, setActiveTab] = useState<'preset' | 'custom'>('preset');
   const [menuItems, setMenuItems] = useState<MenuItemProps[]>([]);
-  const [loading, setLoading] = useState(false);
+  const [presetMenus, setPresetMenus] = useState<PresetMenuProps[]>([]);
+  const [loading, setLoading] = useState(true);
   
   // Selection State
   const [selectedPreset, setSelectedPreset] = useState<string | null>(null);
   const [customSelection, setCustomSelection] = useState<string[]>([]);
   
   const navigate = useNavigate();
+
+  useEffect(() => {
+    // Fetch preset menus on mount
+    fetch('/api/preset-menus')
+      .then(res => res.json())
+      .then(data => {
+        if (Array.isArray(data)) setPresetMenus(data);
+        setLoading(false);
+      })
+      .catch(err => {
+        console.error(err);
+        setLoading(false);
+      });
+  }, []);
 
   useEffect(() => {
     if (activeTab === 'custom' && menuItems.length === 0) {
@@ -63,7 +58,7 @@ export const BuildMenu = () => {
           setLoading(false);
         });
     }
-  }, [activeTab]);
+  }, [activeTab, menuItems.length]);
 
   const toggleCustomItem = (itemName: string) => {
     setCustomSelection(prev => 
@@ -116,38 +111,64 @@ export const BuildMenu = () => {
           </div>
 
           {activeTab === 'preset' && (
-            <div className="grid-2">
-              {PRESET_MENUS.map((preset, idx) => (
-                <div 
-                  key={idx} 
-                  className="card" 
-                  style={{ 
-                    cursor: 'pointer', 
-                    border: selectedPreset === preset.name ? '2px solid var(--burgundy)' : '1px solid var(--border-subtle)',
-                    transform: selectedPreset === preset.name ? 'translateY(-4px)' : 'none',
-                    boxShadow: selectedPreset === preset.name ? 'var(--shadow-lg)' : 'none'
-                  }}
-                  onClick={() => {
-                    setSelectedPreset(preset.name);
-                    setCustomSelection([]);
-                  }}
-                >
-                  <h3 style={{ fontSize: '1.6rem', color: selectedPreset === preset.name ? 'var(--burgundy)' : 'var(--text-main)' }}>{preset.name}</h3>
-                  <p style={{ margin: '12px 0 24px', fontSize: '1rem' }}>{preset.description}</p>
-                  <ul style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px', color: 'var(--text-muted)' }}>
-                    {preset.items.map((item, i) => (
-                      <li key={i} style={{ display: 'flex', gap: '8px' }}>
-                        <span style={{ color: 'var(--gold)' }}>•</span> {item}
-                      </li>
-                    ))}
-                  </ul>
-                  {selectedPreset === preset.name && (
-                    <div style={{ marginTop: '24px', color: 'var(--burgundy)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
-                      ✓ Selected
-                    </div>
-                  )}
+            <div>
+              {loading ? (
+                <div className="admin-loading"><div className="admin-spinner"></div></div>
+              ) : (
+                <div className="grid-2">
+                  {presetMenus.map((preset) => {
+                    let parsedItems: string[] = [];
+                    try {
+                      parsedItems = JSON.parse(preset.items || '[]');
+                    } catch (e) {
+                      parsedItems = typeof preset.items === 'string' ? [preset.items] : [];
+                    }
+
+                    return (
+                      <div 
+                        key={preset.id} 
+                        className="card dish-card" 
+                        style={{ 
+                          cursor: 'pointer', 
+                          border: selectedPreset === preset.name ? '2px solid var(--burgundy)' : '1px solid var(--border-subtle)',
+                          transform: selectedPreset === preset.name ? 'translateY(-4px)' : 'none',
+                          boxShadow: selectedPreset === preset.name ? 'var(--shadow-lg)' : 'none',
+                          padding: 0,
+                          overflow: 'hidden',
+                          display: 'flex',
+                          flexDirection: 'column'
+                        }}
+                        onClick={() => {
+                          setSelectedPreset(preset.name);
+                          setCustomSelection([]);
+                        }}
+                      >
+                        {preset.imageBase64 && (
+                          <div className="dish-photo dish-photo-real" style={{ height: '200px' }}>
+                            <img src={preset.imageBase64} alt={preset.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        )}
+                        <div className="dish-body" style={{ padding: '24px', flex: 1, display: 'flex', flexDirection: 'column' }}>
+                          <h3 style={{ fontSize: '1.6rem', color: selectedPreset === preset.name ? 'var(--burgundy)' : 'var(--text-main)' }}>{preset.name}</h3>
+                          <p style={{ margin: '12px 0 24px', fontSize: '1rem' }}>{preset.description}</p>
+                          <ul style={{ textAlign: 'left', display: 'flex', flexDirection: 'column', gap: '8px', color: 'var(--text-muted)', flex: 1 }}>
+                            {parsedItems.map((item, i) => (
+                              <li key={i} style={{ display: 'flex', gap: '8px' }}>
+                                <span style={{ color: 'var(--gold)' }}>•</span> {item}
+                              </li>
+                            ))}
+                          </ul>
+                          {selectedPreset === preset.name && (
+                            <div style={{ marginTop: '24px', color: 'var(--burgundy)', fontWeight: '600', fontSize: '0.9rem', textTransform: 'uppercase', letterSpacing: '0.1em' }}>
+                              ✓ Selected
+                            </div>
+                          )}
+                        </div>
+                      </div>
+                    );
+                  })}
                 </div>
-              ))}
+              )}
             </div>
           )}
 
@@ -170,9 +191,13 @@ export const BuildMenu = () => {
                         }}
                         onClick={() => toggleCustomItem(item.name)}
                       >
-                        {item.imageBase64 && (
+                        {item.imageBase64 ? (
+                          <div className="dish-photo dish-photo-real">
+                            <img src={item.imageBase64} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                          </div>
+                        ) : (
                           <div className="dish-photo">
-                            <img src={item.imageBase64} alt={item.name} />
+                            <svg width="42" height="42" viewBox="0 0 24 24" fill="none" stroke="var(--gold-deep)" strokeWidth="1.5"><path d="M12 2v20M17 5H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"></path></svg>
                           </div>
                         )}
                         <div className="dish-body">

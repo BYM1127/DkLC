@@ -1,6 +1,6 @@
 import { Router, Request, Response } from 'express';
 import { AppDataSource } from '../database';
-import { ContactMessage, QuoteRequest, MenuItem, GalleryImage, SiteSettings } from '../entities';
+import { ContactMessage, QuoteRequest, MenuItem, GalleryImage, SiteSettings, PresetMenu } from '../entities';
 
 const router = Router();
 
@@ -25,6 +25,18 @@ router.get('/menu', async (req: Request, res: Response) => {
     return res.status(200).json(items);
   } catch (error) {
     console.error('[API] Error fetching menu:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+// GET /api/preset-menus
+router.get('/preset-menus', async (req: Request, res: Response) => {
+  try {
+    const repo = AppDataSource.getRepository(PresetMenu);
+    const menus = await repo.find({ where: { isActive: true } });
+    return res.status(200).json(menus);
+  } catch (error) {
+    console.error('[API] Error fetching preset menus:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });
