@@ -1,6 +1,7 @@
 import { useEffect, useState } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 import { ReplyModal } from '../../components/ReplyModal';
+import { Mail, MessageCircle, Phone } from 'lucide-react';
 
 interface Contact {
   id: number;
@@ -94,26 +95,26 @@ export const AdminContacts = () => {
                     <p>{contact.message}</p>
                   </div>
 
-                  <div className="admin-contact-actions">
+                  <div className="admin-contact-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
                     <button
-                      className="btn-admin-small btn-admin-primary"
+                      className="btn-admin btn-admin-small btn-admin-primary"
                       onClick={() => setReplyTarget(contact)}
                     >
-                      📧 Reply
+                      <Mail size={16} /> Reply
                     </button>
                     {contact.phone && (
                       <a
                         href={`https://wa.me/${contact.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${contact.name}, thank you for reaching out to Dimpho ke Lesego Catering. `)}`}
                         target="_blank"
                         rel="noopener noreferrer"
-                        className="btn-admin-small btn-admin-whatsapp"
+                        className="btn-admin btn-admin-small btn-admin-whatsapp"
                       >
-                        💬 Quick WhatsApp
+                        <MessageCircle size={16} /> Quick WhatsApp
                       </a>
                     )}
                     {contact.phone && (
-                      <a href={`tel:${contact.phone}`} className="btn-admin-small btn-admin-outline">
-                        📞 Call
+                      <a href={`tel:${contact.phone}`} className="btn-admin btn-admin-small btn-admin-outline">
+                        <Phone size={16} /> Call
                       </a>
                     )}
                   </div>
