@@ -1,9 +1,17 @@
-import { Link } from 'react-router-dom';
-import { Home, Info, Utensils, Image, Phone, ShoppingCart as ShoppingCartIcon, Calendar } from 'lucide-react';
+import { useState, useEffect } from 'react';
+import { Link, useLocation } from 'react-router-dom';
+import { Home, Info, Utensils, Image, Phone, ShoppingCart as ShoppingCartIcon, Calendar, Menu, X } from 'lucide-react';
 import { useCart } from '../context/CartContext';
 
 export const Navbar = () => {
   const { toggleCart, cartCount } = useCart();
+  const [menuOpen, setMenuOpen] = useState(false);
+  const location = useLocation();
+
+  // Close menu when route changes
+  useEffect(() => {
+    setMenuOpen(false);
+  }, [location.pathname]);
 
   return (
     <header className="site-header">
@@ -16,12 +24,14 @@ export const Navbar = () => {
           </span>
         </Link>
         <div className="nav-right">
-          <button className="cart-btn" id="cartBtn" aria-label="View your order" onClick={toggleCart}>
+          <button className="cart-btn" aria-label="View your order" onClick={toggleCart}>
             <svg width="20" height="20" viewBox="0 0 24 24" fill="none"><path d="M3 4h2l2.4 12.4a2 2 0 0 0 2 1.6h8.4a2 2 0 0 0 2-1.6L21 8H6" stroke="currentColor" strokeWidth="1.6" strokeLinecap="round" strokeLinejoin="round"/><circle cx="9" cy="20" r="1.4" fill="currentColor"/><circle cx="17" cy="20" r="1.4" fill="currentColor"/></svg>
-            <span className="cart-badge" id="cartBadge" style={{display: cartCount > 0 ? 'flex' : 'none'}}>{cartCount}</span>
+            <span className="cart-badge" style={{display: cartCount > 0 ? 'flex' : 'none'}}>{cartCount}</span>
           </button>
-          <button className="menu-toggle" id="menuToggle" aria-label="Toggle menu" aria-expanded="false">☰</button>
-          <nav className="main-nav" id="mainNav">
+          <button className="menu-toggle" aria-label="Toggle menu" aria-expanded={menuOpen} onClick={() => setMenuOpen(!menuOpen)}>
+            {menuOpen ? <X size={24} /> : <Menu size={24} />}
+          </button>
+          <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
             <Link to="/" className="nav-link"><Home size={16} /> Home</Link>
             <Link to="/about" className="nav-link"><Info size={16} /> About</Link>
             <Link to="/menu" className="nav-link"><Utensils size={16} /> Menu</Link>
