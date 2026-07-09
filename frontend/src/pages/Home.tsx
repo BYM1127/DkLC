@@ -1,19 +1,60 @@
+import { useState, useEffect } from 'react';
 import { Link } from 'react-router-dom';
 
+type MenuItemProps = {
+  id: string;
+  name: string;
+  price: number;
+  description: string;
+  imageBase64: string;
+};
+
+type GalleryItemProps = {
+  id: string;
+  eventName: string;
+  description: string;
+  imageBase64: string;
+};
+
 export const Home = () => {
+  const [featuredItems, setFeaturedItems] = useState<MenuItemProps[]>([]);
+  const [galleryImages, setGalleryImages] = useState<GalleryItemProps[]>([]);
+  const [aboutText, setAboutText] = useState('Dimpho ke Lesego Catering brings refined, home-cooked South African cuisine to your weddings, milestone celebrations, memorials and private gatherings, from Phaphadi, Limpopo, (Mamaila Village), to your table.');
+
+  useEffect(() => {
+    // Fetch Settings (About text)
+    fetch('/api/settings').then(res => res.json()).then(data => {
+      if (data && data.aboutText) setAboutText(data.aboutText);
+    }).catch(console.error);
+
+    // Fetch Menu
+    fetch('/api/menu').then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setFeaturedItems(data.slice(0, 3));
+    }).catch(console.error);
+
+    // Fetch Gallery
+    fetch('/api/gallery').then(res => res.json()).then(data => {
+      if (Array.isArray(data)) setGalleryImages(data.slice(0, 4));
+    }).catch(console.error);
+  }, []);
+
+  const buildWhatsAppLink = (itemName: string) => {
+    const text = `Hi, I'd like to order ${itemName}`;
+    return `https://wa.me/27796929591?text=${encodeURIComponent(text)}`;
+  };
+
   return (
     <section className="page" data-page="home">
-
 
   <div className="hero">
     <div className="wrap hero-grid">
       <div>
         <span className="eyebrow on-dark">Catering Services</span>
-        <h1>Feasts of joy,<br />served with <em>distinction.</em></h1>
-        <p className="lead">Dimpho ke Lesego Catering brings refined, home-cooked South African cuisine to your weddings, milestone celebrations, memorials and private gatherings, from Phaphadi, Limpopo, (Mamaila Village), to your table.</p>
+        <h1>Delicious catering for your special event</h1>
+        <p className="lead">{aboutText}</p>
         <div className="hero-ctas">
           <Link to="/menu" className="btn btn-gold">View the Menu</Link>
-          <Link to="/book" className="btn btn-outline on-dark">Reserve Your Date</Link>
+          <Link to="/quote" className="btn btn-outline on-dark">Get a Quote</Link>
         </div>
       </div>
       <div className="hero-art">
@@ -29,11 +70,11 @@ export const Home = () => {
   <section className="section">
     <div className="wrap story">
       <div>
-        <span className="eyebrow">Our Story</span>
+        <span className="eyebrow">Why Us</span>
         <h2>An elevated take on the family table.</h2>
-        <p>Dimpho ke Lesego Catering began the way the finest hospitality always does — around a home table, for people we love. Today we cater weddings, milestone birthdays, memorials and private functions of every size, but the standard has never changed: exceptional ingredients, generous craftsmanship, and food that honours the occasion.</p>
+        <p>{aboutText}</p>
         <p style={{ marginTop: '14px' }}>Every menu may be taken as our signature offering or tailored entirely to your event, your guest list and your vision. We attend to every detail so you are free to host, not manage.</p>
-        <Link to="/about" className="btn btn-outline" style={{ marginTop: '20px' }}>Discover Our Story</Link>
+        <Link to="/contact" className="btn btn-outline" style={{ marginTop: '20px' }}>Discover Our Story</Link>
       </div>
       <div className="grid-2" style={{ gridTemplateColumns: '1fr 1fr' }}>
         <div className="card">
@@ -56,112 +97,61 @@ export const Home = () => {
     </div>
   </section>
 
-  <section className="section tight" style={{ background: 'var(--cream-deep)', borderTop: '1px solid var(--cream-line)', borderBottom: '1px solid var(--cream-line)' }}>
-    <div className="wrap" style={{ textAlign: 'center' }}>
-      <span className="eyebrow">What We Bring</span>
-      <h2>Our offerings</h2>
-      <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
-      <div className="grid-3">
-        <div className="card">
-          <div className="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M4 12c0-4 3-7 8-7s8 3 8 7-3 7-8 7-8-3-8-7Z" stroke="#C2902F" strokeWidth="1.4"/></svg></div>
-          <h3>Culinary Excellence</h3>
-          <p>Refined, flavour-forward feasts for events of any size — from an intimate dinner to a 300-guest celebration.</p>
-        </div>
-        <div className="card">
-          <div className="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M5 5h14v14H5z" stroke="#C2902F" strokeWidth="1.4"/><path d="M5 10h14M10 5v14" stroke="#C2902F" strokeWidth="1.4"/></svg></div>
-          <h3>Bespoke Menus</h3>
-          <p>Select a signature menu or compose your own — we accommodate dietary needs, culture and budget with care.</p>
-        </div>
-        <div className="card">
-          <div className="icon-wrap"><svg width="22" height="22" viewBox="0 0 24 24" fill="none"><path d="M12 21s-7-4.5-7-10a5 5 0 0 1 9-3 5 5 0 0 1 9 3c0 5.5-7 10-7 10Z" stroke="#C2902F" strokeWidth="1.4"/></svg></div>
-          <h3>Attentive Service</h3>
-          <p>We oversee every detail — headcount, timing, setup and delivery — so your day unfolds without a thought.</p>
-        </div>
-      </div>
-    </div>
-  </section>
-
-  <section className="section">
-    <div className="wrap" style={{ textAlign: 'center' }}>
-      <span className="eyebrow">Crowd Favourites</span>
-      <h2>A taste of the menu</h2>
-      <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
-      <div className="grid-3">
-        <div className="dish-card">
-          <div className="dish-photo dish-photo-real"><img src="/gallery-oxtail.png" alt="Oxtail Stew" /></div>
-          <div className="dish-body">
-            <h3>Oxtail Stew</h3>
-            <span className="dish-price">R95</span>
-            <p className="dish-desc">Slow-braised until it falls from the bone, in a rich tomato-onion gravy.</p>
-          </div>
-        </div>
-        <div className="dish-card">
-          <div className="dish-photo dish-photo-real"><img src="/gallery-morogo.png" alt="Morogo & Pap" /></div>
-          <div className="dish-body">
-            <h3>Morogo & Pap</h3>
-            <span className="dish-price">R55</span>
-            <p className="dish-desc">Traditional wild spinach with onion and tomato, served with stywe pap.</p>
-          </div>
-        </div>
-        <div className="dish-card">
-          <div className="dish-photo dish-photo-real"><img src="/gallery-malva.png" alt="Malva Pudding" /></div>
-          <div className="dish-body">
-            <h3>Malva Pudding</h3>
-            <span className="dish-price">R35</span>
-            <p className="dish-desc">Warm, syrup-soaked sponge with custard — the way it's meant to be.</p>
-          </div>
-        </div>
-      </div>
-      <div style={{ marginTop: '36px' }}>
-        <Link to="/menu" className="btn btn-outline">See the Full Menu</Link>
-      </div>
-    </div>
-  </section>
-
-  <section className="section tight" style={{ background: 'var(--burgundy)' }}>
-    <div className="wrap" style={{ textAlign: 'center' }}>
-      <span className="eyebrow on-dark">Occasions We Cater</span>
-      <div className="chip-row" style={{ marginTop: '18px' }}>
-        <span className="chip gold">Weddings</span>
-        <span className="chip gold">Milestone Birthdays</span>
-        <span className="chip gold">Memorials</span>
-        <span className="chip gold">Family Gatherings</span>
-        <span className="chip gold">Corporate Events</span>
-        <span className="chip gold">Community Functions</span>
-      </div>
-    </div>
-  </section>
-
-
-  <section className="section testi-section" style={{ background: 'var(--cream-deep)', borderTop: '1px solid var(--cream-line)', borderBottom: '1px solid var(--cream-line)' }}>
-    <div className="wrap">
-      <div style={{ textAlign: 'center', marginBottom: '12px' }}>
-        <span className="eyebrow">From Our Clients</span>
-        <h2>Words from happy guests</h2>
+  {featuredItems.length > 0 && (
+    <section className="section" style={{ background: 'var(--cream-deep)', borderTop: '1px solid var(--cream-line)', borderBottom: '1px solid var(--cream-line)' }}>
+      <div className="wrap" style={{ textAlign: 'center' }}>
+        <span className="eyebrow">Crowd Favourites</span>
+        <h2>A taste of the menu</h2>
         <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
+        <div className="grid-3">
+          {featuredItems.map(item => (
+            <div key={item.id} className="dish-card" style={{ display: 'flex', flexDirection: 'column' }}>
+              {item.imageBase64 && (
+                <div className="dish-photo dish-photo-real"><img src={item.imageBase64} alt={item.name} style={{ width: '100%', height: '100%', objectFit: 'cover' }} /></div>
+              )}
+              <div className="dish-body" style={{ flex: 1, display: 'flex', flexDirection: 'column' }}>
+                <h3>{item.name}</h3>
+                <span className="dish-price">R{item.price}</span>
+                <p className="dish-desc" style={{ flex: 1, marginBottom: '20px' }}>{item.description}</p>
+                <a href={buildWhatsAppLink(item.name)} target="_blank" rel="noopener noreferrer" className="btn btn-whatsapp" style={{ width: '100%', justifyContent: 'center' }}>
+                  Order on WhatsApp
+                </a>
+              </div>
+            </div>
+          ))}
+        </div>
+        <div style={{ marginTop: '36px' }}>
+          <Link to="/menu" className="btn btn-outline">See the Full Menu</Link>
+        </div>
       </div>
-      <div className="grid-3">
-        <div className="testi">
-          <div className="testi-stars">{'★'.repeat(5)}</div>
-          <span className="quote-mark">"</span>
-          <p>The pap and morogo tasted exactly like my grandmother's. Our guests are still talking about the oxtail weeks later. Truly exceptional catering.</p>
-          <cite>— T. Maila · Wedding Reception, Polokwane</cite>
+    </section>
+  )}
+
+  {galleryImages.length > 0 && (
+    <section className="section">
+      <div className="wrap" style={{ textAlign: 'center' }}>
+        <span className="eyebrow">Recent Events</span>
+        <h2>Gallery Teaser</h2>
+        <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
+        <div className="gallery-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
+          {galleryImages.map(img => (
+            <div key={img.id} className="gallery-item">
+              <div className="gallery-photo" style={{ height: '220px' }}>
+                {img.imageBase64 ? (
+                  <img src={img.imageBase64} alt={img.eventName} style={{ width: '100%', height: '100%', objectFit: 'cover' }} />
+                ) : (
+                  <svg width="24" height="24" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2"><rect x="3" y="3" width="18" height="18" rx="2" ry="2"></rect><circle cx="8.5" cy="8.5" r="1.5"></circle><polyline points="21 15 16 10 5 21"></polyline></svg>
+                )}
+              </div>
+            </div>
+          ))}
         </div>
-        <div className="testi testi-featured">
-          <div className="testi-stars">{'★'.repeat(5)}</div>
-          <span className="quote-mark">"</span>
-          <p>They arrived early, set up quietly, and the food kept coming. Exactly what we needed on a hard day. Everyone was nourished and comforted.</p>
-          <cite>— N. Sello · Memorial Service, Tzaneen</cite>
-        </div>
-        <div className="testi">
-          <div className="testi-stars">{'★'.repeat(5)}</div>
-          <span className="quote-mark">"</span>
-          <p>From the malva pudding to the grilled chicken — everything was perfect. I didn't have to worry about a single thing on my birthday. Highly recommended!</p>
-          <cite>— P. Chauke · 50th Birthday Celebration</cite>
+        <div style={{ marginTop: '36px' }}>
+          <Link to="/gallery" className="btn btn-outline">See Full Gallery</Link>
         </div>
       </div>
-    </div>
-  </section>
+    </section>
+  )}
 
   <section className="section">
     <div className="wrap">
@@ -170,11 +160,10 @@ export const Home = () => {
           <h2>Ready to taste distinction?</h2>
           <p>Share your date and guest count — we'll take care of the rest.</p>
         </div>
-        <Link to="/book" className="btn btn-gold">Reserve Your Date</Link>
+        <Link to="/quote" className="btn btn-gold">Get a Quote</Link>
       </div>
     </div>
   </section>
-
 
 </section>
   );

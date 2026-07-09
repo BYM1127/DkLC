@@ -15,10 +15,9 @@ export const Footer = () => {
       </div>
       <div>
         <h4>Explore</h4>
-        <Link to="/about" className="footer-link">About</Link>
         <Link to="/menu" className="footer-link">Menu</Link>
         <Link to="/gallery" className="footer-link">Gallery</Link>
-        <Link to="/book" className="footer-link">Reserve / Book</Link>
+        <Link to="/contact" className="footer-link">Contact / About</Link>
       </div>
       <div>
         <h4>Legal</h4>
@@ -29,7 +28,7 @@ export const Footer = () => {
       </div>
     </div>
     <div className="footer-bottom">
-      <span>© 2026 Dimpho ke Lesego Catering. All rights reserved.</span>
+      <span>© {new Date().getFullYear()} Dimpho ke Lesego Catering. All rights reserved.</span>
       <span>Phaphadi, Mamaila Village, 0832 · +27 79 692 9591</span>
     </div>
   </div>

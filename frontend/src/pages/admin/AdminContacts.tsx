@@ -1,6 +1,6 @@
 import { useEffect, useState } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
-import { QuoteModal } from '../../components/QuoteModal';
+import { ReplyModal } from '../../components/ReplyModal';
 
 interface Contact {
   id: number;
@@ -126,7 +126,7 @@ export const AdminContacts = () => {
 
       {/* Reply Modal */}
       {replyTarget && (
-        <QuoteModal
+        <ReplyModal
           isOpen={!!replyTarget}
           onClose={() => setReplyTarget(null)}
           customerName={replyTarget.name}

@@ -1,6 +1,6 @@
 import { setServers } from 'dns';
 import { Collection, Db, Filter, MongoClient } from 'mongodb';
-import { ContactMessage, BookingRequest, Order, Coupon, BlockedDate } from './entities';
+import { ContactMessage, QuoteRequest, BlockedDate, MenuItem, GalleryImage, SiteSettings } from './entities';
 
 type EntityCtor<T> = new () => T;
 type FindOptions<T> = {
@@ -20,10 +20,11 @@ if (mongoDnsServers) {
 
 const collectionNames = new Map<Function, string>([
   [ContactMessage, 'contact_messages'],
-  [BookingRequest, 'booking_requests'],
-  [Order, 'orders'],
-  [Coupon, 'coupons'],
+  [QuoteRequest, 'quote_requests'],
   [BlockedDate, 'blocked_dates'],
+  [MenuItem, 'menu_items'],
+  [GalleryImage, 'gallery_images'],
+  [SiteSettings, 'site_settings'],
 ]);
 
 let client: MongoClient | null = null;
@@ -148,9 +149,14 @@ export const AppDataSource = {
         connectTimeoutMS: mongoConnectTimeoutMs,
         serverSelectionTimeoutMS: mongoServerSelectionTimeoutMs,
       });
-      await client.connect();
-      database = client.db(mongoDbName);
-      databaseReady = true;
+      try {
+        await client.connect();
+        database = client.db(mongoDbName);
+        databaseReady = true;
+      } catch (error) {
+        client = null;
+        throw error;
+      }
     }
   },
 
@@ -165,18 +171,20 @@ export const AppDataSource = {
   },
 };
 
-const initialCoupons = [
-  { code: 'WELCOME10', discountType: 'Percentage', value: 10, isActive: true },
-  { code: 'DKL50', discountType: 'Fixed', value: 50, isActive: true },
-];
+const seedSiteSettings = async () => {
+  const settingsRepo = AppDataSource.getRepository(SiteSettings);
+  const existingSettings = await settingsRepo.find();
 
-const seedInitialCoupons = async () => {
-  const couponRepo = AppDataSource.getRepository(Coupon);
-  const existingCoupons = await couponRepo.find();
-
-  if (existingCoupons.length === 0) {
-    await couponRepo.save(initialCoupons.map(coupon => couponRepo.create(coupon)));
-    console.log('Seeded initial coupons');
+  if (existingSettings.length === 0) {
+    await settingsRepo.save(settingsRepo.create({
+      aboutText: 'Dimpho ke Lesego Catering brings refined, home-cooked South African cuisine to your weddings, milestone celebrations, memorials and private gatherings, from Phaphadi, Limpopo, (Mamaila Village), to your table.',
+      contactPhone: '+27 79 692 9591',
+      contactEmail: '',
+      address: 'Phaphadi, Mamaila Village, 0832',
+      deliveryAreas: 'Limpopo, Gauteng',
+      hoursOfOperation: 'Mon-Sat: 08:00 - 17:00, Sun: Closed'
+    }));
+    console.log('Seeded initial site settings');
   }
 };
 
@@ -186,7 +194,7 @@ export const initializeDatabase = async () => {
       console.log('Connecting to MongoDB Atlas database', mongoDbName);
       await AppDataSource.initialize();
       console.log('Database connection established');
-      await seedInitialCoupons();
+      await seedSiteSettings();
     }
   } catch (error) {
     console.error('Database connection failed:', error);

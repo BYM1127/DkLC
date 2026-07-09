@@ -26,17 +26,25 @@ export const AdminLayout = () => {
             <span className="admin-nav-icon">📊</span>
             Dashboard
           </NavLink>
-          <NavLink to="/admin/orders" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
-            <span className="admin-nav-icon">🛒</span>
-            Orders
+          <NavLink to="/admin/quotes" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+            <span className="admin-nav-icon">📄</span>
+            Quotes
           </NavLink>
-          <NavLink to="/admin/bookings" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
-            <span className="admin-nav-icon">📅</span>
-            Bookings
+          <NavLink to="/admin/menu" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+            <span className="admin-nav-icon">🍽️</span>
+            Menu Items
+          </NavLink>
+          <NavLink to="/admin/gallery" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+            <span className="admin-nav-icon">🖼️</span>
+            Gallery
+          </NavLink>
+          <NavLink to="/admin/settings" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
+            <span className="admin-nav-icon">⚙️</span>
+            Site Settings
           </NavLink>
           <NavLink to="/admin/contacts" className={({ isActive }) => `admin-nav-link ${isActive ? 'active' : ''}`}>
             <span className="admin-nav-icon">💬</span>
-            Contacts
+            Messages
           </NavLink>
         </nav>
 

@@ -3,20 +3,18 @@ import { useEffect } from 'react';
 import { Navbar } from './components/Navbar';
 import { Footer } from './components/Footer';
 import { Home } from './pages/Home';
-import { About } from './pages/About';
 import { Menu } from './pages/Menu';
 import { Gallery } from './pages/Gallery';
-import { Book } from './pages/Book';
-import { Order } from './pages/Order';
 import { Contact } from './pages/Contact';
-import { CartProvider } from './context/CartContext';
-import { CartDrawer } from './components/CartDrawer';
+import { Quote } from './pages/Quote';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminLogin } from './pages/admin/AdminLogin';
 import { AdminDashboard } from './pages/admin/AdminDashboard';
-import { AdminOrders } from './pages/admin/AdminOrders';
-import { AdminBookings } from './pages/admin/AdminBookings';
+import { AdminQuotes } from './pages/admin/AdminQuotes';
+import { AdminMenu } from './pages/admin/AdminMenu';
+import { AdminGallery } from './pages/admin/AdminGallery';
+import { AdminSettings } from './pages/admin/AdminSettings';
 import { AdminContacts } from './pages/admin/AdminContacts';
 import './index.css';
 
@@ -53,7 +51,6 @@ const WhatsAppButton = () => (
 const PublicLayout = ({ children }: { children: React.ReactNode }) => (
   <>
     <Navbar />
-    <CartDrawer />
     {children}
     <Footer />
     <WhatsAppButton />
@@ -62,38 +59,37 @@ const PublicLayout = ({ children }: { children: React.ReactNode }) => (
 
 function App() {
   return (
-    <CartProvider>
-      <Router>
-        <ScrollToTop />
-        <Routes>
-          {/* Public routes — with Navbar + Footer */}
-          <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
-          <Route path="/about" element={<PublicLayout><About /></PublicLayout>} />
-          <Route path="/menu" element={<PublicLayout><Menu /></PublicLayout>} />
-          <Route path="/gallery" element={<PublicLayout><Gallery /></PublicLayout>} />
-          <Route path="/book" element={<PublicLayout><Book /></PublicLayout>} />
-          <Route path="/order" element={<PublicLayout><Order /></PublicLayout>} />
-          <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+    <Router>
+      <ScrollToTop />
+      <Routes>
+        {/* Public routes — with Navbar + Footer */}
+        <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
+        <Route path="/menu" element={<PublicLayout><Menu /></PublicLayout>} />
+        <Route path="/gallery" element={<PublicLayout><Gallery /></PublicLayout>} />
+        <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/about" element={<PublicLayout><Contact /></PublicLayout>} />
+        <Route path="/quote" element={<PublicLayout><Quote /></PublicLayout>} />
 
-          {/* Admin routes — own layout, no public Navbar/Footer */}
-          <Route path="/admin/login" element={
-            <AdminAuthProvider>
-              <AdminLogin />
-            </AdminAuthProvider>
-          } />
-          <Route path="/admin" element={
-            <AdminAuthProvider>
-              <AdminLayout />
-            </AdminAuthProvider>
-          }>
-            <Route index element={<AdminDashboard />} />
-            <Route path="orders" element={<AdminOrders />} />
-            <Route path="bookings" element={<AdminBookings />} />
-            <Route path="contacts" element={<AdminContacts />} />
-          </Route>
-        </Routes>
-      </Router>
-    </CartProvider>
+        {/* Admin routes — own layout, no public Navbar/Footer */}
+        <Route path="/admin/login" element={
+          <AdminAuthProvider>
+            <AdminLogin />
+          </AdminAuthProvider>
+        } />
+        <Route path="/admin" element={
+          <AdminAuthProvider>
+            <AdminLayout />
+          </AdminAuthProvider>
+        }>
+          <Route index element={<AdminDashboard />} />
+          <Route path="quotes" element={<AdminQuotes />} />
+          <Route path="menu" element={<AdminMenu />} />
+          <Route path="gallery" element={<AdminGallery />} />
+          <Route path="settings" element={<AdminSettings />} />
+          <Route path="contacts" element={<AdminContacts />} />
+        </Route>
+      </Routes>
+    </Router>
   );
 }
 
