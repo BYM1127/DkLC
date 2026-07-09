@@ -45,6 +45,22 @@ router.post('/login', (req: Request, res: Response) => {
   return res.status(200).json({ token });
 });
 
+// ── Debug route (temporary) ────────────────────────────────────────────────
+router.get('/debug-orders', async (req: Request, res: Response) => {
+  try {
+    const orderRepo = AppDataSource.getRepository(Order);
+    const orders = await orderRepo.find({ order: { createdAt: 'DESC' } });
+    const formattedOrders = orders.map(o => ({
+      id: o.id,
+      orderRef: o.orderRef,
+      items: (o.orderItems || []).map(i => ({ name: i.name })),
+    }));
+    return res.status(200).json(formattedOrders);
+  } catch (err: any) {
+    return res.status(500).json({ error: err.message, stack: err.stack });
+  }
+});
+
 // ── Auth middleware (applied to all routes below) ─────────────────────────
 router.use((req: Request, res: Response, next) => {
   // In non-serverless dev with no credentials set, allow through
