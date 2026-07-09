@@ -1,5 +1,6 @@
 export const isServerlessRuntime = (): boolean =>
   Boolean(
+    process.env.VERCEL ||
     process.env.NETLIFY ||
     process.env.AWS_LAMBDA_FUNCTION_NAME ||
     process.env.LAMBDA_TASK_ROOT ||
