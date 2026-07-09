@@ -199,6 +199,17 @@ export const AdminQuotes = () => {
             </div>
             <div className="admin-modal-footer">
               <button className="btn-admin btn-admin-outline" onClick={() => setSelectedQuote(null)}>Close</button>
+              {selectedQuote.email && (
+                <a
+                  href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(selectedQuote.email)}&su=${encodeURIComponent(`Quote Request #${selectedQuote.id} - Dimpho ke Lesego Catering`)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className="btn-admin btn-admin-primary"
+                  style={{ textDecoration: 'none' }}
+                >
+                  Reply via Gmail
+                </a>
+              )}
               <button className="btn-admin btn-admin-primary" style={{ background: '#25D366', color: '#fff', border: 'none' }} onClick={() => handleWhatsApp(selectedQuote.phone, selectedQuote.name)}>
                 WhatsApp Customer
               </button>

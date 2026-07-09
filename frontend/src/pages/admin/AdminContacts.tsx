@@ -96,12 +96,16 @@ export const AdminContacts = () => {
                   </div>
 
                   <div className="admin-contact-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
-                    <button
-                      className="btn-admin btn-admin-small btn-admin-primary"
-                      onClick={() => setReplyTarget(contact)}
-                    >
-                      <Mail size={16} /> Reply
-                    </button>
+                    {contact.email && (
+                      <a
+                        href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact.email)}&su=${encodeURIComponent('Reply from Dimpho ke Lesego Catering')}`}
+                        target="_blank"
+                        rel="noopener noreferrer"
+                        className="btn-admin btn-admin-small btn-admin-primary"
+                      >
+                        <Mail size={16} /> Reply via Gmail
+                      </a>
+                    )}
                     {contact.phone && (
                       <a
                         href={`https://wa.me/${contact.phone.replace(/\D/g, '')}?text=${encodeURIComponent(`Hi ${contact.name}, thank you for reaching out to Dimpho ke Lesego Catering. `)}`}
@@ -123,19 +127,6 @@ export const AdminContacts = () => {
             </div>
           ))}
         </div>
-      )}
-
-      {/* Reply Modal */}
-      {replyTarget && (
-        <ReplyModal
-          isOpen={!!replyTarget}
-          onClose={() => setReplyTarget(null)}
-          customerName={replyTarget.name}
-          customerPhone={replyTarget.phone || ''}
-          customerEmail={replyTarget.email || ''}
-          entityId={replyTarget.id}
-          fetchWithAuth={fetchWithAuth}
-        />
       )}
     </div>
   );
