@@ -10,6 +10,9 @@ interface Quote {
   eventType: string;
   dateNeeded: string;
   guestCount: number;
+  venueLocation: string;
+  providerType: string;
+  selectedMenu: string;
   notes: string;
   status: string;
   createdAt: string;
@@ -151,24 +154,30 @@ export const AdminQuotes = () => {
             </div>
             
             <div className="admin-modal-body" style={{ display: 'grid', gap: '20px' }}>
-              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: 'var(--cream-deep)', padding: '16px', borderRadius: 'var(--radius)' }}>
+              <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '16px', background: 'var(--bg-alt)', padding: '16px', borderRadius: 'var(--radius)', border: '1px solid var(--border-subtle)' }}>
                 <div>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', display: 'block' }}>Customer</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Customer</span>
                   <strong>{selectedQuote.name}</strong>
                   <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>{selectedQuote.phone}</div>
                   <div style={{ fontSize: '0.9rem' }}>{selectedQuote.email}</div>
                 </div>
                 <div>
-                  <span style={{ fontSize: '0.85rem', color: 'var(--ink-soft)', display: 'block' }}>Event Details</span>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Event Details</span>
                   <strong>{selectedQuote.eventType || 'Not specified'}</strong>
                   <div style={{ fontSize: '0.9rem', marginTop: '4px' }}>Date: {selectedQuote.dateNeeded ? new Date(selectedQuote.dateNeeded).toLocaleDateString() : 'N/A'}</div>
                   <div style={{ fontSize: '0.9rem' }}>Guests: {selectedQuote.guestCount || 'N/A'}</div>
+                </div>
+                <div style={{ gridColumn: '1 / -1', borderTop: '1px solid var(--border-subtle)', paddingTop: '16px', marginTop: '8px' }}>
+                  <span style={{ fontSize: '0.85rem', color: 'var(--text-muted)', display: 'block' }}>Logistics & Menu</span>
+                  <div style={{ fontSize: '0.9rem', marginTop: '4px' }}><strong>Venue:</strong> {selectedQuote.venueLocation || 'Not provided'}</div>
+                  <div style={{ fontSize: '0.9rem', marginTop: '4px' }}><strong>Provisioning:</strong> {selectedQuote.providerType || 'Not provided'}</div>
+                  <div style={{ fontSize: '0.9rem', marginTop: '4px', color: 'var(--burgundy)', fontWeight: '600' }}><strong>Selected Menu:</strong> {selectedQuote.selectedMenu || 'None'}</div>
                 </div>
               </div>
 
               <div>
                 <h3 style={{ fontSize: '1rem', marginBottom: '8px' }}>Notes / Special Requests</h3>
-                <div style={{ background: '#fff', padding: '12px', border: '1px solid var(--cream-line)', borderRadius: 'var(--radius)', minHeight: '80px', whiteSpace: 'pre-wrap' }}>
+                <div style={{ background: '#fff', padding: '12px', border: '1px solid var(--border-subtle)', borderRadius: 'var(--radius)', minHeight: '80px', whiteSpace: 'pre-wrap' }}>
                   {selectedQuote.notes || 'None'}
                 </div>
               </div>

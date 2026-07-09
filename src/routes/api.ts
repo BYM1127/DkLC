@@ -89,7 +89,10 @@ router.post('/quotes', async (req: Request, res: Response) => {
       eventType,
       dateNeeded,
       guestCount,
-      notes
+      notes,
+      venueLocation,
+      providerType,
+      selectedMenu
     } = req.body;
 
     console.log(`[API] Quote submission from: ${name}, phone: ${phone}, event: ${eventType}`);
@@ -108,6 +111,9 @@ router.post('/quotes', async (req: Request, res: Response) => {
       dateNeeded: dateNeeded || '',
       guestCount: guestCount ? Number(guestCount) : 0,
       notes: notes || '',
+      venueLocation: venueLocation || '',
+      providerType: providerType || '',
+      selectedMenu: selectedMenu || '',
       status: 'Pending',
     });
 

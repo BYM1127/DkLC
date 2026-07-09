@@ -7,6 +7,7 @@ import { Menu } from './pages/Menu';
 import { Gallery } from './pages/Gallery';
 import { Contact } from './pages/Contact';
 import { Quote } from './pages/Quote';
+import { BuildMenu } from './pages/BuildMenu';
 import { AdminAuthProvider } from './context/AdminAuthContext';
 import { AdminLayout } from './pages/admin/AdminLayout';
 import { AdminLogin } from './pages/admin/AdminLogin';
@@ -65,6 +66,7 @@ function App() {
         {/* Public routes — with Navbar + Footer */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/menu" element={<PublicLayout><Menu /></PublicLayout>} />
+        <Route path="/build-menu" element={<PublicLayout><BuildMenu /></PublicLayout>} />
         <Route path="/portfolio" element={<PublicLayout><Gallery /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><Contact /></PublicLayout>} />

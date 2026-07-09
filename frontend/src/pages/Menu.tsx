@@ -43,6 +43,9 @@ export const Menu = () => {
           <span className="eyebrow on-dark">Our Menu</span>
           <h1>Choose your feast.</h1>
           <p>Browse our selection of refined, home-cooked dishes. All orders are processed directly on WhatsApp.</p>
+          <div style={{ marginTop: '24px' }}>
+            <Link to="/build-menu" className="btn btn-primary">Build Your Own Menu</Link>
+          </div>
         </div>
       </div>
 

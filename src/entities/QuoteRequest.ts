@@ -7,6 +7,9 @@ export class QuoteRequest {
   dateNeeded: string = '';
   guestCount: number = 0;
   notes: string = '';
+  venueLocation: string = '';
+  providerType: string = '';
+  selectedMenu: string = '';
   status: string = 'Pending';
   createdAt!: Date;
 }
