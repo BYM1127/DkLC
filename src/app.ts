@@ -1,5 +1,6 @@
 import 'dotenv/config';
 import express, { Express } from 'express';
+// Triggering clean deployment with new environment variables
 import cors from 'cors';
 import * as path from 'path';
 import { initializeDatabase } from './database';
