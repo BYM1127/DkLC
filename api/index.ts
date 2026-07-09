@@ -1,6 +1,7 @@
 import { app, ensureAppReady } from '../src/app';
 
 export default async function handler(req: any, res: any) {
+  console.log(`[Vercel] Handling request: ${req.method} ${req.url}`);
   try {
     const readyTimeoutMs = Math.min(Number(process.env.APP_READY_TIMEOUT_MS || 9000), 25000);
     await ensureAppReady(readyTimeoutMs);
