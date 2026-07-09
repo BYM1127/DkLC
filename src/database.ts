@@ -10,8 +10,8 @@ type FindOptions<T> = {
 
 const mongoUri = process.env.MONGODB_URI || process.env.MONGO_URI;
 const mongoDbName = process.env.MONGODB_DB || 'dimpho_ke_lesego_catering';
-const mongoConnectTimeoutMs = Number(process.env.MONGODB_CONNECT_TIMEOUT_MS || 8000);
-const mongoServerSelectionTimeoutMs = Number(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS || 8000);
+const mongoConnectTimeoutMs = Number(process.env.MONGODB_CONNECT_TIMEOUT_MS || 3000);
+const mongoServerSelectionTimeoutMs = Number(process.env.MONGODB_SERVER_SELECTION_TIMEOUT_MS || 3000);
 const mongoDnsServers = process.env.MONGODB_DNS_SERVERS;
 
 if (mongoDnsServers) {
