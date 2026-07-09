@@ -258,6 +258,7 @@ nav.main-nav { display: flex; align-items: center; gap: 32px; justify-self: cent
 .field.full { grid-column: 1 / -1; }
 .field label { font-size: 0.85rem; font-weight: 600; color: var(--text-main); }
 .field input, .field select, .field textarea {
+  width: 100%; box-sizing: border-box;
   font-family: var(--body); font-size: 1rem; padding: 16px;
   border-radius: var(--radius-sm); border: 1px solid var(--border-subtle);
   background: var(--bg-alt); color: var(--text-main);
