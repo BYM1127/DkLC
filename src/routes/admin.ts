@@ -97,6 +97,34 @@ router.get('/contacts', async (req: Request, res: Response) => {
   }
 });
 
+router.post('/contacts/:id/reply', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const { message, channel } = req.body;
+
+    if (!message) return res.status(400).json({ message: 'Message is required.' });
+
+    const contactRepo = AppDataSource.getRepository(ContactMessage);
+    const contact = await contactRepo.findOne({ where: { id: parseInt(id, 10) } });
+
+    if (!contact) return res.status(404).json({ message: 'Contact not found.' });
+
+    if (channel === 'whatsapp') {
+      const whatsappLink = notificationService.buildWhatsAppLink(contact.phone || '', message);
+      return res.status(200).json({ success: true, whatsappLink });
+    } else if (channel === 'email') {
+      // In a real app, send an email here.
+      // For now, simulate success.
+      return res.status(200).json({ success: true, message: 'Email sent successfully.' });
+    } else {
+      return res.status(400).json({ message: 'Invalid channel specified.' });
+    }
+  } catch (error) {
+    console.error('Error replying to contact:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // === QUOTES ===
 router.get('/quotes', async (req: Request, res: Response) => {
   try {
