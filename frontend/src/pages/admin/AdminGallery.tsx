@@ -94,7 +94,7 @@ export const AdminGallery = () => {
     <div className="admin-page">
       <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
         <div>
-          <h1>Gallery</h1>
+          <h1>Portfolio</h1>
           <p className="admin-page-subtitle">Manage photos of your past events.</p>
         </div>
         <button className="btn-admin btn-admin-primary" onClick={openModal}>
@@ -127,7 +127,7 @@ export const AdminGallery = () => {
           ))}
         </div>
         {images.length === 0 && (
-          <div className="admin-empty">No photos in the gallery.</div>
+          <div className="admin-empty">No photos in the portfolio.</div>
         )}
       </div>
 

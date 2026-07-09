@@ -58,7 +58,7 @@ export const Home = () => {
         </div>
       </div>
       <div className="hero-art">
-        <div className="ring-frame"><img src="/logo.png" alt="Dimpho ke Lesego Catering Services logo" style={{ height: '240px', width: '240px', objectFit: 'contain' }} /></div>
+        <div className="ring-frame"><img src="https://images.unsplash.com/photo-1555244162-803834f80029?w=800&q=80" alt="Exquisite catering spread" style={{ height: '340px', width: '340px', objectFit: 'cover' }} /></div>
       </div>
     </div>
   </div>
@@ -131,7 +131,7 @@ export const Home = () => {
     <section className="section">
       <div className="wrap" style={{ textAlign: 'center' }}>
         <span className="eyebrow">Recent Events</span>
-        <h2>Gallery Teaser</h2>
+        <h2>Portfolio Teaser</h2>
         <div className="ornate-divider"><span className="line"></span><span className="diamond"></span><span className="line"></span></div>
         <div className="gallery-grid" style={{ gridTemplateColumns: 'repeat(4, 1fr)', gap: '16px' }}>
           {galleryImages.map(img => (
@@ -147,7 +147,7 @@ export const Home = () => {
           ))}
         </div>
         <div style={{ marginTop: '36px' }}>
-          <Link to="/gallery" className="btn btn-outline">See Full Gallery</Link>
+          <Link to="/portfolio" className="btn btn-outline">See Full Portfolio</Link>
         </div>
       </div>
     </section>

@@ -65,7 +65,7 @@ function App() {
         {/* Public routes — with Navbar + Footer */}
         <Route path="/" element={<PublicLayout><Home /></PublicLayout>} />
         <Route path="/menu" element={<PublicLayout><Menu /></PublicLayout>} />
-        <Route path="/gallery" element={<PublicLayout><Gallery /></PublicLayout>} />
+        <Route path="/portfolio" element={<PublicLayout><Gallery /></PublicLayout>} />
         <Route path="/contact" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/about" element={<PublicLayout><Contact /></PublicLayout>} />
         <Route path="/quote" element={<PublicLayout><Quote /></PublicLayout>} />
@@ -84,7 +84,7 @@ function App() {
           <Route index element={<AdminDashboard />} />
           <Route path="quotes" element={<AdminQuotes />} />
           <Route path="menu" element={<AdminMenu />} />
-          <Route path="gallery" element={<AdminGallery />} />
+          <Route path="portfolio" element={<AdminGallery />} />
           <Route path="settings" element={<AdminSettings />} />
           <Route path="contacts" element={<AdminContacts />} />
         </Route>

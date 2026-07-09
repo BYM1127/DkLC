@@ -28,7 +28,7 @@ export const Navbar = () => {
           <nav className={`main-nav ${menuOpen ? 'open' : ''}`}>
             <Link to="/" className="nav-link"><Home size={16} /> Home</Link>
             <Link to="/menu" className="nav-link"><Utensils size={16} /> Menu</Link>
-            <Link to="/gallery" className="nav-link"><Image size={16} /> Gallery</Link>
+            <Link to="/portfolio" className="nav-link"><Image size={16} /> Portfolio</Link>
             <Link to="/contact" className="nav-link"><Phone size={16} /> Contact / About</Link>
           </nav>
         </div>
