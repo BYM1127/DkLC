@@ -1,6 +1,5 @@
 import { useEffect, useState } from 'react';
 import { useAdminAuth } from '../../context/AdminAuthContext';
-import { ReplyModal } from '../../components/ReplyModal';
 import { Mail, MessageCircle, Phone } from 'lucide-react';
 
 interface Contact {
@@ -16,7 +15,6 @@ export const AdminContacts = () => {
   const { fetchWithAuth } = useAdminAuth();
   const [contacts, setContacts] = useState<Contact[]>([]);
   const [loading, setLoading] = useState(true);
-  const [replyTarget, setReplyTarget] = useState<Contact | null>(null);
   const [expandedId, setExpandedId] = useState<number | null>(null);
 
   useEffect(() => {
