@@ -167,6 +167,19 @@ router.post('/contacts/:id/reply', async (req: Request, res: Response) => {
   }
 });
 
+router.delete('/contacts/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const repo = AppDataSource.getRepository(ContactMessage);
+    const collection = (repo as any).collection;
+    await collection.deleteOne({ id: parseInt(id, 10) });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error deleting contact:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
 // === QUOTES ===
 router.get('/quotes', async (req: Request, res: Response) => {
   try {
@@ -196,6 +209,19 @@ router.put('/quotes/:id/status', async (req: Request, res: Response) => {
     return res.status(200).json({ success: true, status: quote.status });
   } catch (error) {
     console.error('Error updating quote status:', error);
+    return res.status(500).json({ message: 'Internal server error' });
+  }
+});
+
+router.delete('/quotes/:id', async (req: Request, res: Response) => {
+  try {
+    const { id } = req.params;
+    const repo = AppDataSource.getRepository(QuoteRequest);
+    const collection = (repo as any).collection;
+    await collection.deleteOne({ id: parseInt(id, 10) });
+    return res.status(200).json({ success: true });
+  } catch (error) {
+    console.error('Error deleting quote:', error);
     return res.status(500).json({ message: 'Internal server error' });
   }
 });

@@ -133,6 +133,22 @@ export const AdminQuotes = () => {
                   <td><span className={`admin-status ${getStatusClass(quote.status)}`}>{quote.status}</span></td>
                   <td>
                     <button className="btn-admin-small btn-admin-outline" onClick={() => setSelectedQuote(quote)}>View</button>
+                    <button 
+                      className="btn-admin-small btn-admin-outline" 
+                      style={{ color: 'var(--burgundy)', borderColor: 'var(--burgundy)', marginLeft: '8px' }}
+                      onClick={async () => {
+                        if (confirm('Are you sure you want to delete this quote?')) {
+                          try {
+                            const res = await fetchWithAuth(`/api/admin/quotes/${quote.id}`, { method: 'DELETE' });
+                            if (res.ok) setQuotes(prev => prev.filter(q => q.id !== quote.id));
+                          } catch (e) {
+                            console.error(e);
+                          }
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
                   </td>
                 </tr>
               ))}

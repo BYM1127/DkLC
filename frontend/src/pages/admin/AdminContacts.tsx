@@ -119,6 +119,24 @@ export const AdminContacts = () => {
                         <Phone size={16} /> Call
                       </a>
                     )}
+                    <button 
+                      className="btn-admin btn-admin-small btn-admin-outline" 
+                      style={{ color: 'var(--burgundy)', borderColor: 'var(--burgundy)' }}
+                      onClick={async () => {
+                        if (confirm('Are you sure you want to delete this message?')) {
+                          try {
+                            const res = await fetchWithAuth(`/api/admin/contacts/${contact.id}`, { method: 'DELETE' });
+                            if (res.ok) {
+                              setContacts(prev => prev.filter(c => c.id !== contact.id));
+                            }
+                          } catch (e) {
+                            console.error('Failed to delete contact', e);
+                          }
+                        }
+                      }}
+                    >
+                      Delete
+                    </button>
                   </div>
                 </div>
               )}
