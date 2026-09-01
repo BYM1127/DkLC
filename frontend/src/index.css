@@ -423,5 +423,28 @@ footer h4 { font-family: var(--body); color: white; font-size: 1rem; text-transf
 .admin-items-table td { padding: 16px 12px; border-bottom: 1px solid var(--border-subtle); }
 .admin-items-total { margin-top: 24px; text-align: right; }
 .admin-grand-total { font-family: var(--display); font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-top: 8px; }
-@ m e d i a   p r i n t   {   . n o - p r i n t   {   d i s p l a y :   n o n e   ! i m p o r t a n t ;   }   }  
- 
+
+@media print {
+  .no-print { display: none !important; }
+}
+
+@media (max-width: 900px) {
+  .admin-shell { flex-direction: column; }
+  .admin-sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-subtle); }
+  .admin-brand { justify-content: center; }
+  .admin-nav { display: flex; overflow-x: auto; padding: 0; }
+  .admin-nav-section { display: none; }
+  .admin-nav-link { padding: 16px; border-left: none; border-bottom: 3px solid transparent; flex-shrink: 0; white-space: nowrap; }
+  .admin-nav-link.active { border-left-color: transparent; border-bottom-color: var(--burgundy); }
+  .admin-page { padding: 24px 16px; }
+  .admin-stats-grid { grid-template-columns: 1fr; gap: 16px; }
+  .admin-page-header h1 { font-size: 1.8rem; }
+  
+  .admin-modal {
+    max-width: 95%;
+    margin: 20px auto;
+  }
+  .admin-modal-body > div {
+    grid-template-columns: 1fr !important;
+  }
+}
