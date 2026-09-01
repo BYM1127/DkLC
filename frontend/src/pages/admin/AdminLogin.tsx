@@ -3,11 +3,13 @@ import { useNavigate } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
 
 export const AdminLogin = () => {
+  const [isRegistering, setIsRegistering] = useState(false);
   const [email, setEmail] = useState('');
   const [password, setPassword] = useState('');
   const [error, setError] = useState('');
+  const [message, setMessage] = useState('');
   const [loading, setLoading] = useState(false);
-  const { login, isAuthenticated } = useAdminAuth();
+  const { login, register, isAuthenticated } = useAdminAuth();
   const navigate = useNavigate();
 
   // Already logged in — redirect immediately
@@ -19,6 +21,7 @@ export const AdminLogin = () => {
   const handleSubmit = async (e: FormEvent) => {
     e.preventDefault();
     setError('');
+    setMessage('');
 
     if (!email.trim()) {
       setError('Please enter your email address.');
@@ -30,13 +33,27 @@ export const AdminLogin = () => {
     }
 
     setLoading(true);
-    const result = await login(email, password);
-    setLoading(false);
-
-    if (result.ok) {
-      navigate('/admin', { replace: true });
+    
+    if (isRegistering) {
+      const result = await register(email, password);
+      setLoading(false);
+      
+      if (result.ok) {
+        setMessage('Registration successful! You can now sign in.');
+        setIsRegistering(false);
+        setPassword('');
+      } else {
+        setError(result.error || 'Failed to register. Please try again.');
+      }
     } else {
-      setError(result.error || 'Invalid email or password. Please try again.');
+      const result = await login(email, password);
+      setLoading(false);
+
+      if (result.ok) {
+        navigate('/admin', { replace: true });
+      } else {
+        setError(result.error || 'Invalid email or password. Please try again.');
+      }
     }
   };
 
@@ -45,7 +62,7 @@ export const AdminLogin = () => {
       <div className="admin-login-card">
         <div className="admin-login-header">
           <div className="admin-login-icon">🔐</div>
-          <h1>Admin Panel</h1>
+          <h1>{isRegistering ? 'Register Admin' : 'Admin Panel'}</h1>
           <p className="admin-login-subtitle">Dimpho ke Lesego Catering Services</p>
         </div>
 
@@ -71,24 +88,36 @@ export const AdminLogin = () => {
               placeholder="Enter your password"
               value={password}
               onChange={e => setPassword(e.target.value)}
-              autoComplete="current-password"
+              autoComplete={isRegistering ? 'new-password' : 'current-password'}
             />
           </div>
 
           {error && <div className="admin-login-error">{error}</div>}
+          {message && <div style={{ color: 'green', marginTop: '10px', fontSize: '0.9rem' }}>{message}</div>}
 
           <button
             type="submit"
             className="btn-admin btn-admin-primary admin-login-btn"
             disabled={loading}
+            style={{ marginTop: '20px' }}
           >
-            {loading ? 'Signing in…' : 'Sign In'}
+            {loading ? (isRegistering ? 'Registering…' : 'Signing in…') : (isRegistering ? 'Register' : 'Sign In')}
           </button>
+          
+          <div style={{ marginTop: '15px', textAlign: 'center' }}>
+            <button
+              type="button"
+              onClick={() => {
+                setIsRegistering(!isRegistering);
+                setError('');
+                setMessage('');
+              }}
+              style={{ background: 'none', border: 'none', color: '#4a5568', cursor: 'pointer', textDecoration: 'underline' }}
+            >
+              {isRegistering ? 'Already have an account? Sign In' : 'Need to register? Create Admin Account'}
+            </button>
+          </div>
         </form>
-
-        <p className="admin-login-hint">
-          Set <code>ADMIN_EMAIL</code> and <code>ADMIN_PASSWORD</code> in your environment variables to configure admin access.
-        </p>
       </div>
     </div>
   );

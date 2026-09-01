@@ -2,7 +2,7 @@ import { Router, Request, Response } from 'express';
 import * as path from 'path';
 import * as crypto from 'crypto';
 import { AppDataSource } from '../database';
-import { ContactMessage, QuoteRequest, MenuItem, GalleryImage, SiteSettings, PresetMenu } from '../entities';
+import { ContactMessage, QuoteRequest, MenuItem, GalleryImage, SiteSettings, PresetMenu, AdminUser } from '../entities';
 import { EmailService } from '../services/EmailService';
 import { isServerlessRuntime } from '../runtime';
 
@@ -12,44 +12,86 @@ const notificationService = new EmailService(webRootPath);
 
 const activeSessions = new Set<string>();
 
-router.post('/login', (req: Request, res: Response) => {
-  const { email, password } = req.body || {};
+router.post('/register', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body;
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
 
-  const expectedEmail = (process.env.ADMIN_EMAIL || '').trim().toLowerCase();
-  const expectedPassword = process.env.ADMIN_PASSWORD || '';
+    const adminRepo = AppDataSource.getRepository(AdminUser);
+    const existingAdmins = await adminRepo.find();
+    
+    if (existingAdmins.length > 0) {
+      const existingUser = await adminRepo.findOne({ where: { email: email.trim().toLowerCase() } });
+      if (existingUser) {
+        return res.status(400).json({ message: 'Admin with this email already exists.' });
+      }
+    }
 
-  if (!expectedEmail || !expectedPassword) {
-    return res.status(503).json({ message: 'Admin credentials are not configured on the server.' });
+    const salt = crypto.randomBytes(16).toString('hex');
+    const passwordHash = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512').toString('hex');
+    const storedHash = `${salt}:${passwordHash}`;
+
+    const newAdmin = adminRepo.create({
+      email: email.trim().toLowerCase(),
+      passwordHash: storedHash
+    });
+
+    await adminRepo.save(newAdmin);
+
+    return res.status(201).json({ message: 'Admin registered successfully.' });
+  } catch (error) {
+    console.error('Error registering admin:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
+});
 
-  if (
-    !email ||
-    !password ||
-    email.trim().toLowerCase() !== expectedEmail ||
-    password !== expectedPassword
-  ) {
-    return res.status(401).json({ message: 'Invalid email or password.' });
+router.post('/login', async (req: Request, res: Response) => {
+  try {
+    const { email, password } = req.body || {};
+
+    if (!email || !password) {
+      return res.status(400).json({ message: 'Email and password are required.' });
+    }
+
+    const adminRepo = AppDataSource.getRepository(AdminUser);
+    const admin = await adminRepo.findOne({ where: { email: email.trim().toLowerCase() } });
+
+    if (!admin) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    const [salt, key] = admin.passwordHash.split(':');
+    const hashedBuffer = crypto.pbkdf2Sync(password, salt, 1000, 64, 'sha512');
+    const keyBuffer = Buffer.from(key, 'hex');
+    
+    // Fallback if timingSafeEqual complains about length mismatch
+    let match = false;
+    if (hashedBuffer.length === keyBuffer.length) {
+      match = crypto.timingSafeEqual(hashedBuffer, keyBuffer);
+    }
+
+    if (!match) {
+      return res.status(401).json({ message: 'Invalid email or password.' });
+    }
+
+    const token = crypto.randomBytes(32).toString('hex');
+    activeSessions.add(token);
+    setTimeout(() => activeSessions.delete(token), 8 * 60 * 60 * 1000);
+
+    console.log(`[Admin] Login successful for ${email}`);
+    return res.status(200).json({ token });
+  } catch (error) {
+    console.error('Error during login:', error);
+    return res.status(500).json({ message: 'Internal server error' });
   }
-
-  const token = crypto.randomBytes(32).toString('hex');
-  activeSessions.add(token);
-  setTimeout(() => activeSessions.delete(token), 8 * 60 * 60 * 1000);
-
-  console.log(`[Admin] Login successful for ${email}`);
-  return res.status(200).json({ token });
 });
 
 router.use((req: Request, res: Response, next) => {
   res.setHeader('Cache-Control', 'no-store, no-cache, must-revalidate, proxy-revalidate');
   res.setHeader('Pragma', 'no-cache');
   res.setHeader('Expires', '0');
-
-  const emailSet = !!process.env.ADMIN_EMAIL;
-  const passwordSet = !!process.env.ADMIN_PASSWORD;
-
-  if (!emailSet && !passwordSet && !isServerlessRuntime()) {
-    return next();
-  }
 
   const authHeader = req.header('authorization') || '';
   const token = authHeader.startsWith('Bearer ') ? authHeader.slice(7).trim() : '';

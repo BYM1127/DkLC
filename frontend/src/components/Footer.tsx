@@ -25,6 +25,7 @@ export const Footer = () => {
         <Link to="/accessibility" className="footer-link">Accessibility Statement</Link>
         <Link to="/terms" className="footer-link">Terms & Conditions</Link>
         <Link to="/refund-policy" className="footer-link">Refund Policy</Link>
+        <Link to="/admin" className="footer-link" style={{ marginTop: '10px', color: '#9c2424' }}>Admin Panel</Link>
       </div>
     </div>
     <div className="footer-bottom">

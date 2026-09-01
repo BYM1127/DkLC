@@ -3,6 +3,7 @@ import { createContext, useContext, useState, useCallback, type ReactNode } from
 interface AdminAuthContextType {
   isAuthenticated: boolean;
   login: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
+  register: (email: string, password: string) => Promise<{ ok: boolean; error?: string }>;
   logout: () => void;
   fetchWithAuth: (url: string, options?: RequestInit) => Promise<Response>;
 }
@@ -49,6 +50,25 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
     }
   }, []);
 
+  const register = useCallback(async (email: string, password: string) => {
+    try {
+      const res = await fetch('/api/admin/register', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ email: email.trim(), password }),
+      });
+
+      if (res.ok) {
+        return { ok: true };
+      }
+
+      const err = await res.json().catch(() => ({}));
+      return { ok: false, error: err.message || 'Failed to register.' };
+    } catch {
+      return { ok: false, error: 'Could not reach the server. Please try again.' };
+    }
+  }, []);
+
   const logout = useCallback(() => {
     sessionStorage.removeItem(SESSION_KEY);
     setToken(null);
@@ -72,7 +92,7 @@ export const AdminAuthProvider = ({ children }: { children: ReactNode }) => {
   );
 
   return (
-    <AdminAuthContext.Provider value={{ isAuthenticated, login, logout, fetchWithAuth }}>
+    <AdminAuthContext.Provider value={{ isAuthenticated, login, register, logout, fetchWithAuth }}>
       {children}
     </AdminAuthContext.Provider>
   );

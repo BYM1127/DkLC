@@ -1,6 +1,6 @@
 import { setServers } from 'dns';
 import { Collection, Db, Filter, MongoClient } from 'mongodb';
-import { ContactMessage, QuoteRequest, BlockedDate, MenuItem, GalleryImage, SiteSettings, PresetMenu } from './entities';
+import { ContactMessage, QuoteRequest, BlockedDate, MenuItem, GalleryImage, SiteSettings, PresetMenu, AdminUser } from './entities';
 
 type EntityCtor<T> = new () => T;
 type FindOptions<T> = {
@@ -26,6 +26,7 @@ const collectionNames = new Map<Function, string>([
   [GalleryImage, 'gallery_images'],
   [SiteSettings, 'site_settings'],
   [PresetMenu, 'preset_menus'],
+  [AdminUser, 'admin_users'],
 ]);
 
 let client: MongoClient | null = null;

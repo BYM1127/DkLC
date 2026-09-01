@@ -5,3 +5,4 @@ export { GalleryImage } from './GalleryImage';
 export { SiteSettings } from './SiteSettings';
 export { QuoteRequest } from './QuoteRequest';
 export { PresetMenu } from './PresetMenu';
+export { AdminUser } from './AdminUser';
