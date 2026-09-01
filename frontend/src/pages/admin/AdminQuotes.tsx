@@ -91,9 +91,9 @@ export const AdminQuotes = () => {
       <div style={{ padding: '40px', background: 'white', color: 'black', minHeight: '100vh', fontFamily: 'sans-serif' }}>
         <div className="no-print" style={{ marginBottom: '20px', padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
           <h3 style={{ margin: '0 0 10px 0' }}>Quote Generator Controls</h3>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
             <label style={{ fontWeight: 'bold' }}>Quoted Price (ZAR): </label>
-            <input type="text" value={quotePrice} onChange={e => setQuotePrice(e.target.value)} placeholder="e.g. 5000.00" style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+            <input type="text" value={quotePrice} onChange={e => setQuotePrice(e.target.value)} placeholder="e.g. 5000.00" style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', maxWidth: '150px' }} />
             <button className="btn-admin btn-admin-primary" onClick={() => window.print()}>Print / Save as PDF</button>
             <button className="btn-admin btn-admin-outline" onClick={() => setIsPrinting(false)}>Back to Admin</button>
           </div>
@@ -101,7 +101,7 @@ export const AdminQuotes = () => {
         
         {/* Printable Area */}
         <div style={{ maxWidth: '800px', margin: '0 auto', border: '1px solid #eee', padding: '40px', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #5F0C0C', paddingBottom: '20px', marginBottom: '30px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #5F0C0C', paddingBottom: '20px', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
             <div>
               <h1 style={{ color: '#5F0C0C', margin: 0 }}>Dimpho ke Lesego</h1>
               <h2 style={{ margin: '5px 0 0 0', fontSize: '1.2rem', color: '#666' }}>Catering Services</h2>
@@ -115,7 +115,7 @@ export const AdminQuotes = () => {
             </div>
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
             <div>
               <h3 style={{ margin: '0 0 10px 0', color: '#5F0C0C' }}>Prepared For:</h3>
               <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedQuote.name}</p>
@@ -302,7 +302,7 @@ export const AdminQuotes = () => {
               </div>
 
             </div>
-            <div className="admin-modal-footer">
+            <div className="admin-modal-footer" style={{ flexWrap: 'wrap' }}>
               <button className="btn-admin btn-admin-outline" onClick={() => setSelectedQuote(null)}>Close</button>
               <button 
                 className="btn-admin btn-admin-primary" 

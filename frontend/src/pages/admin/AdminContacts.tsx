@@ -93,7 +93,7 @@ export const AdminContacts = () => {
                     <p>{contact.message}</p>
                   </div>
 
-                  <div className="admin-contact-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px' }}>
+                  <div className="admin-contact-actions" style={{ display: 'flex', gap: '12px', marginTop: '16px', flexWrap: 'wrap' }}>
                     {contact.email && (
                       <a
                         href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(contact.email)}&su=${encodeURIComponent('Reply from Dimpho ke Lesego Catering')}`}
