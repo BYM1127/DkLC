@@ -424,18 +424,31 @@ footer h4 { font-family: var(--body); color: white; font-size: 1rem; text-transf
 .admin-items-total { margin-top: 24px; text-align: right; }
 .admin-grand-total { font-family: var(--display); font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-top: 8px; }
 
+.admin-mobile-topbar { display: none; }
+
 @media print {
   .no-print { display: none !important; }
 }
 
 @media (max-width: 900px) {
   .admin-shell { flex-direction: column; }
-  .admin-sidebar { width: 100%; height: auto; position: static; border-right: none; border-bottom: 1px solid var(--border-subtle); }
-  .admin-brand { justify-content: center; }
-  .admin-nav { display: flex; overflow-x: auto; padding: 0; }
-  .admin-nav-section { display: none; }
-  .admin-nav-link { padding: 16px; border-left: none; border-bottom: 3px solid transparent; flex-shrink: 0; white-space: nowrap; }
-  .admin-nav-link.active { border-left-color: transparent; border-bottom-color: var(--burgundy); }
+  .admin-mobile-topbar {
+    display: flex; align-items: center; gap: 12px; padding: 16px 24px;
+    background: white; border-bottom: 1px solid var(--border-subtle);
+    position: sticky; top: 0; z-index: 1001;
+  }
+  .admin-brand { display: none; }
+  .admin-sidebar { 
+    position: fixed; top: 69px; left: -100%; bottom: 0; width: 280px;
+    height: calc(100vh - 69px); z-index: 1000;
+    transition: left 0.3s ease; box-shadow: var(--shadow-lg);
+    background: white; border-right: 1px solid var(--border-subtle);
+  }
+  .admin-sidebar.open { left: 0; }
+  .admin-nav { display: flex; flex-direction: column; overflow-y: auto; overflow-x: hidden; padding: 20px 0; }
+  .admin-nav-section { display: block; }
+  .admin-nav-link { padding: 14px 24px; border-bottom: none; border-left: 3px solid transparent; white-space: normal; }
+  .admin-nav-link.active { border-bottom-color: transparent; border-left-color: var(--burgundy); }
   .admin-page { padding: 24px 16px; }
   .admin-stats-grid { grid-template-columns: 1fr; gap: 16px; }
   .admin-page-header h1 { font-size: 1.8rem; }

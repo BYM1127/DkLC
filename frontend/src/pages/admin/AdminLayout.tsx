@@ -1,8 +1,16 @@
-import { NavLink, Outlet, Navigate } from 'react-router-dom';
+import { useState, useEffect } from 'react';
+import { NavLink, Outlet, Navigate, useLocation } from 'react-router-dom';
 import { useAdminAuth } from '../../context/AdminAuthContext';
+import { Menu, X } from 'lucide-react';
 
 export const AdminLayout = () => {
   const { isAuthenticated, logout } = useAdminAuth();
+  const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const location = useLocation();
+
+  useEffect(() => {
+    setIsMobileMenuOpen(false);
+  }, [location.pathname]);
 
   if (!isAuthenticated) {
     return <Navigate to="/admin/login" replace />;
@@ -10,8 +18,17 @@ export const AdminLayout = () => {
 
   return (
     <div className="admin-shell">
+      {/* Mobile Topbar */}
+      <div className="admin-mobile-topbar no-print">
+        <div className="admin-brand-icon" style={{ width: 36, height: 36, fontSize: '0.9rem' }}>DkL</div>
+        <span style={{ fontWeight: 'bold', fontFamily: 'var(--display)' }}>Admin Panel</span>
+        <button onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)} style={{ marginLeft: 'auto', background: 'none', border: 'none', color: 'var(--text-main)' }}>
+          {isMobileMenuOpen ? <X size={24} /> : <Menu size={24} />}
+        </button>
+      </div>
+
       {/* Sidebar */}
-      <aside className="admin-sidebar">
+      <aside className={`admin-sidebar ${isMobileMenuOpen ? 'open' : ''}`}>
         <div className="admin-brand">
           <div className="admin-brand-icon">DkL</div>
           <div>
