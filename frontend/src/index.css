@@ -423,3 +423,5 @@ footer h4 { font-family: var(--body); color: white; font-size: 1rem; text-transf
 .admin-items-table td { padding: 16px 12px; border-bottom: 1px solid var(--border-subtle); }
 .admin-items-total { margin-top: 24px; text-align: right; }
 .admin-grand-total { font-family: var(--display); font-size: 1.4rem; color: var(--text-main); font-weight: 700; margin-top: 8px; }
+@ m e d i a   p r i n t   {   . n o - p r i n t   {   d i s p l a y :   n o n e   ! i m p o r t a n t ;   }   }  
+ 

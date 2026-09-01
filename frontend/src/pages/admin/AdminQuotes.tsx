@@ -81,7 +81,96 @@ export const AdminQuotes = () => {
     window.open(`https://wa.me/${phone.replace(/[^0-9]/g, '')}?text=${encodeURIComponent(text)}`, '_blank');
   };
 
+  const [isPrinting, setIsPrinting] = useState(false);
+  const [quotePrice, setQuotePrice] = useState('');
+
   if (loading) return <div className="admin-loading"><div className="admin-spinner" /></div>;
+
+  if (isPrinting && selectedQuote) {
+    return (
+      <div style={{ padding: '40px', background: 'white', color: 'black', minHeight: '100vh', fontFamily: 'sans-serif' }}>
+        <div className="no-print" style={{ marginBottom: '20px', padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
+          <h3 style={{ margin: '0 0 10px 0' }}>Quote Generator Controls</h3>
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center' }}>
+            <label style={{ fontWeight: 'bold' }}>Quoted Price (ZAR): </label>
+            <input type="text" value={quotePrice} onChange={e => setQuotePrice(e.target.value)} placeholder="e.g. 5000.00" style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+            <button className="btn-admin btn-admin-primary" onClick={() => window.print()}>Print / Save as PDF</button>
+            <button className="btn-admin btn-admin-outline" onClick={() => setIsPrinting(false)}>Back to Admin</button>
+          </div>
+        </div>
+        
+        {/* Printable Area */}
+        <div style={{ maxWidth: '800px', margin: '0 auto', border: '1px solid #eee', padding: '40px', boxSizing: 'border-box' }}>
+          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #5F0C0C', paddingBottom: '20px', marginBottom: '30px' }}>
+            <div>
+              <h1 style={{ color: '#5F0C0C', margin: 0 }}>Dimpho ke Lesego</h1>
+              <h2 style={{ margin: '5px 0 0 0', fontSize: '1.2rem', color: '#666' }}>Catering Services</h2>
+              <p style={{ margin: '10px 0 0 0', fontSize: '0.9rem' }}>Phaphadi, Mamaila Village, 0832</p>
+              <p style={{ margin: '2px 0 0 0', fontSize: '0.9rem' }}>Phone: +27 79 692 9591</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <h1 style={{ margin: 0, color: '#333' }}>QUOTE</h1>
+              <p style={{ margin: '5px 0 0 0', fontWeight: 'bold' }}>Quote #{selectedQuote.id}</p>
+              <p style={{ margin: '2px 0 0 0' }}>Date: {new Date().toLocaleDateString()}</p>
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px' }}>
+            <div>
+              <h3 style={{ margin: '0 0 10px 0', color: '#5F0C0C' }}>Prepared For:</h3>
+              <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedQuote.name}</p>
+              <p style={{ margin: '2px 0' }}>{selectedQuote.phone}</p>
+              <p style={{ margin: '2px 0' }}>{selectedQuote.email}</p>
+            </div>
+            <div style={{ textAlign: 'right' }}>
+              <h3 style={{ margin: '0 0 10px 0', color: '#5F0C0C' }}>Event Details:</h3>
+              <p style={{ margin: '2px 0' }}><strong>Date:</strong> {selectedQuote.dateNeeded ? new Date(selectedQuote.dateNeeded).toLocaleDateString() : 'TBD'}</p>
+              <p style={{ margin: '2px 0' }}><strong>Type:</strong> {selectedQuote.eventType || 'N/A'}</p>
+              <p style={{ margin: '2px 0' }}><strong>Guests:</strong> {selectedQuote.guestCount || 'N/A'}</p>
+              <p style={{ margin: '2px 0' }}><strong>Venue:</strong> {selectedQuote.venueLocation || 'N/A'}</p>
+            </div>
+          </div>
+
+          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
+            <thead>
+              <tr style={{ background: '#f9f9f9', borderBottom: '2px solid #eee' }}>
+                <th style={{ padding: '12px', textAlign: 'left' }}>Description</th>
+                <th style={{ padding: '12px', textAlign: 'right' }}>Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr>
+                <td style={{ padding: '15px 12px', borderBottom: '1px solid #eee' }}>
+                  <strong style={{ display: 'block', marginBottom: '5px' }}>Catering Package: {selectedQuote.selectedMenu || 'Custom'}</strong>
+                  <span style={{ color: '#666', fontSize: '0.9rem' }}>Includes provision for {selectedQuote.guestCount} guests. Provider setup: {selectedQuote.providerType || 'N/A'}.</span>
+                  {selectedQuote.notes && (
+                    <p style={{ marginTop: '10px', fontSize: '0.9rem', fontStyle: 'italic' }}>Notes: {selectedQuote.notes}</p>
+                  )}
+                </td>
+                <td style={{ padding: '15px 12px', textAlign: 'right', borderBottom: '1px solid #eee', fontWeight: 'bold' }}>
+                  R {quotePrice || '0.00'}
+                </td>
+              </tr>
+            </tbody>
+          </table>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
+            <div style={{ width: '300px' }}>
+              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '2px solid #5F0C0C', fontWeight: 'bold', fontSize: '1.2rem' }}>
+                <span>Total:</span>
+                <span>R {quotePrice || '0.00'}</span>
+              </div>
+            </div>
+          </div>
+
+          <div style={{ fontSize: '0.85rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '20px' }}>
+            <p style={{ margin: '0 0 5px 0' }}><strong>Terms & Conditions:</strong></p>
+            <p style={{ margin: '0' }}>Valid for 14 days. A 50% deposit is required to secure your booking. The remaining balance is due 7 days prior to the event date.</p>
+          </div>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="admin-page">
@@ -215,6 +304,13 @@ export const AdminQuotes = () => {
             </div>
             <div className="admin-modal-footer">
               <button className="btn-admin btn-admin-outline" onClick={() => setSelectedQuote(null)}>Close</button>
+              <button 
+                className="btn-admin btn-admin-primary" 
+                style={{ background: '#3b82f6', color: '#fff', border: 'none', marginLeft: 'auto' }} 
+                onClick={() => setIsPrinting(true)}
+              >
+                Make & Download Quote
+              </button>
               {selectedQuote.email && (
                 <a
                   href={`https://mail.google.com/mail/?view=cm&fs=1&to=${encodeURIComponent(selectedQuote.email)}&su=${encodeURIComponent(`Quote Request #${selectedQuote.id} - Dimpho ke Lesego Catering`)}`}
