@@ -82,90 +82,166 @@ export const AdminQuotes = () => {
   };
 
   const [isPrinting, setIsPrinting] = useState(false);
-  const [quotePrice, setQuotePrice] = useState('');
+  
+  // Custom Quotation State
+  const [clientAddress, setClientAddress] = useState('');
+  const [fulfillment, setFulfillment] = useState('Delivery');
+  const [quoteItems, setQuoteItems] = useState([
+    { id: '1', name: 'Catering Service Package', unitPrice: 0, quantity: 1 }
+  ]);
+  const [specialRequests, setSpecialRequests] = useState('None');
+  const [validDays] = useState('14');
+
+  useEffect(() => {
+    if (selectedQuote) {
+      setQuoteItems([
+        { id: '1', name: `Catering Package: ${selectedQuote.selectedMenu || 'Custom'}`, unitPrice: 0, quantity: selectedQuote.guestCount || 1 }
+      ]);
+      setSpecialRequests(selectedQuote.notes || 'None');
+      setClientAddress(selectedQuote.venueLocation || '');
+    }
+  }, [selectedQuote]);
+
+  const handleAddItem = () => {
+    setQuoteItems([...quoteItems, { id: Math.random().toString(), name: '', unitPrice: 0, quantity: 1 }]);
+  };
+
+  const handleUpdateItem = (id: string, field: string, value: any) => {
+    setQuoteItems(quoteItems.map(item => item.id === id ? { ...item, [field]: value } : item));
+  };
+
+  const handleRemoveItem = (id: string) => {
+    setQuoteItems(quoteItems.filter(item => item.id !== id));
+  };
+
+  const calculateTotal = () => {
+    return quoteItems.reduce((total, item) => total + (item.unitPrice * item.quantity), 0);
+  };
 
   if (loading) return <div className="admin-loading"><div className="admin-spinner" /></div>;
 
   if (isPrinting && selectedQuote) {
+    const totalAmount = calculateTotal();
+    
     return (
-      <div style={{ padding: '40px', background: 'white', color: 'black', minHeight: '100vh', fontFamily: 'sans-serif' }}>
-        <div className="no-print" style={{ marginBottom: '20px', padding: '20px', background: '#f5f5f5', borderRadius: '8px' }}>
-          <h3 style={{ margin: '0 0 10px 0' }}>Quote Generator Controls</h3>
-          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap' }}>
-            <label style={{ fontWeight: 'bold' }}>Quoted Price (ZAR): </label>
-            <input type="text" value={quotePrice} onChange={e => setQuotePrice(e.target.value)} placeholder="e.g. 5000.00" style={{ padding: '8px', border: '1px solid #ccc', borderRadius: '4px', maxWidth: '150px' }} />
+      <div style={{ padding: '40px', background: 'white', color: '#333', minHeight: '100vh', fontFamily: 'serif' }}>
+        <div className="no-print" style={{ marginBottom: '20px', padding: '20px', background: '#f5f5f5', borderRadius: '8px', fontFamily: 'sans-serif' }}>
+          <h3 style={{ margin: '0 0 15px 0' }}>Quote Generator Controls</h3>
+          
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Client Address</label>
+              <input type="text" value={clientAddress} onChange={e => setClientAddress(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+            <div>
+              <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Fulfillment (e.g., Delivery, Collection)</label>
+              <input type="text" value={fulfillment} onChange={e => setFulfillment(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+            </div>
+          </div>
+
+          <div style={{ marginBottom: '20px' }}>
+            <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '10px' }}>
+              <h4 style={{ margin: 0 }}>Items</h4>
+              <button className="btn-admin-small btn-admin-outline" onClick={handleAddItem}>+ Add Item</button>
+            </div>
+            {quoteItems.map((item) => (
+              <div key={item.id} style={{ display: 'flex', gap: '10px', marginBottom: '10px', alignItems: 'center' }}>
+                <input type="text" value={item.name} onChange={e => handleUpdateItem(item.id, 'name', e.target.value)} placeholder="Item description" style={{ flex: 1, padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                <input type="number" value={item.unitPrice} onChange={e => handleUpdateItem(item.id, 'unitPrice', Number(e.target.value))} placeholder="Unit Price" style={{ width: '100px', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                <input type="number" value={item.quantity} onChange={e => handleUpdateItem(item.id, 'quantity', Number(e.target.value))} placeholder="Qty" style={{ width: '80px', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                <button style={{ background: 'transparent', border: 'none', color: 'red', cursor: 'pointer', padding: '8px' }} onClick={() => handleRemoveItem(item.id)}><X size={16} /></button>
+              </div>
+            ))}
+            <div style={{ textAlign: 'right', fontWeight: 'bold', marginTop: '10px' }}>
+              Calculated Total: R {totalAmount.toLocaleString()}
+            </div>
+          </div>
+          
+          <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid #ddd', paddingTop: '20px' }}>
             <button className="btn-admin btn-admin-primary" onClick={() => window.print()}>Print / Save as PDF</button>
             <button className="btn-admin btn-admin-outline" onClick={() => setIsPrinting(false)}>Back to Admin</button>
           </div>
         </div>
         
         {/* Printable Area */}
-        <div style={{ maxWidth: '800px', margin: '0 auto', border: '1px solid #eee', padding: '40px', boxSizing: 'border-box' }}>
-          <div style={{ display: 'flex', justifyContent: 'space-between', borderBottom: '2px solid #5F0C0C', paddingBottom: '20px', marginBottom: '30px', flexWrap: 'wrap', gap: '20px' }}>
+        <div style={{ maxWidth: '800px', margin: '0 auto', padding: '40px 20px', boxSizing: 'border-box' }}>
+          
+          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'flex-start' }}>
             <div>
-              <h1 style={{ color: '#5F0C0C', margin: 0 }}>Dimpho ke Lesego</h1>
-              <h2 style={{ margin: '5px 0 0 0', fontSize: '1.2rem', color: '#666' }}>Catering Services</h2>
-              <p style={{ margin: '10px 0 0 0', fontSize: '0.9rem' }}>Phaphadi, Mamaila Village, 0832</p>
-              <p style={{ margin: '2px 0 0 0', fontSize: '0.9rem' }}>Phone: +27 79 692 9591</p>
+              <h1 style={{ color: '#5F0C0C', margin: '0 0 5px 0', fontSize: '2rem', fontFamily: 'serif' }}>Dimpho ke Lesego</h1>
+              <h2 style={{ margin: 0, fontSize: '0.85rem', color: '#888', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>Catering Services</h2>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <h1 style={{ margin: 0, color: '#333' }}>QUOTE</h1>
-              <p style={{ margin: '5px 0 0 0', fontWeight: 'bold' }}>Quote #{selectedQuote.id}</p>
-              <p style={{ margin: '2px 0 0 0' }}>Date: {new Date().toLocaleDateString()}</p>
+            <div style={{ textAlign: 'right', color: '#555' }}>
+              <h1 style={{ margin: '0 0 5px 0', color: '#333', fontSize: '1.4rem', fontStyle: 'italic', fontFamily: 'serif' }}>Event Catering Quotation</h1>
+              <p style={{ margin: '2px 0', fontSize: '0.9rem' }}>Date: {new Date().toLocaleDateString()}</p>
+              <p style={{ margin: '2px 0', fontSize: '0.9rem' }}>Valid For: {validDays} Days</p>
             </div>
           </div>
           
-          <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '40px', flexWrap: 'wrap', gap: '20px' }}>
+          <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '40px', marginBottom: '40px' }}>
             <div>
-              <h3 style={{ margin: '0 0 10px 0', color: '#5F0C0C' }}>Prepared For:</h3>
-              <p style={{ margin: '2px 0', fontWeight: 'bold' }}>{selectedQuote.name}</p>
-              <p style={{ margin: '2px 0' }}>{selectedQuote.phone}</p>
-              <p style={{ margin: '2px 0' }}>{selectedQuote.email}</p>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#5F0C0C', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>Client Details</h3>
+              <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
+                <div><strong>Name:</strong> {selectedQuote.name}</div>
+                <div><strong>Phone:</strong> {selectedQuote.phone}</div>
+                <div><strong>Address:</strong> {clientAddress || '_____________________'}</div>
+              </div>
             </div>
-            <div style={{ textAlign: 'right' }}>
-              <h3 style={{ margin: '0 0 10px 0', color: '#5F0C0C' }}>Event Details:</h3>
-              <p style={{ margin: '2px 0' }}><strong>Date:</strong> {selectedQuote.dateNeeded ? new Date(selectedQuote.dateNeeded).toLocaleDateString() : 'TBD'}</p>
-              <p style={{ margin: '2px 0' }}><strong>Type:</strong> {selectedQuote.eventType || 'N/A'}</p>
-              <p style={{ margin: '2px 0' }}><strong>Guests:</strong> {selectedQuote.guestCount || 'N/A'}</p>
-              <p style={{ margin: '2px 0' }}><strong>Venue:</strong> {selectedQuote.venueLocation || 'N/A'}</p>
-            </div>
-          </div>
-
-          <table style={{ width: '100%', borderCollapse: 'collapse', marginBottom: '40px' }}>
-            <thead>
-              <tr style={{ background: '#f9f9f9', borderBottom: '2px solid #eee' }}>
-                <th style={{ padding: '12px', textAlign: 'left' }}>Description</th>
-                <th style={{ padding: '12px', textAlign: 'right' }}>Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr>
-                <td style={{ padding: '15px 12px', borderBottom: '1px solid #eee' }}>
-                  <strong style={{ display: 'block', marginBottom: '5px' }}>Catering Package: {selectedQuote.selectedMenu || 'Custom'}</strong>
-                  <span style={{ color: '#666', fontSize: '0.9rem' }}>Includes provision for {selectedQuote.guestCount} guests. Provider setup: {selectedQuote.providerType || 'N/A'}.</span>
-                  {selectedQuote.notes && (
-                    <p style={{ marginTop: '10px', fontSize: '0.9rem', fontStyle: 'italic' }}>Notes: {selectedQuote.notes}</p>
-                  )}
-                </td>
-                <td style={{ padding: '15px 12px', textAlign: 'right', borderBottom: '1px solid #eee', fontWeight: 'bold' }}>
-                  R {quotePrice || '0.00'}
-                </td>
-              </tr>
-            </tbody>
-          </table>
-
-          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px' }}>
-            <div style={{ width: '300px' }}>
-              <div style={{ display: 'flex', justifyContent: 'space-between', padding: '10px 0', borderBottom: '2px solid #5F0C0C', fontWeight: 'bold', fontSize: '1.2rem' }}>
-                <span>Total:</span>
-                <span>R {quotePrice || '0.00'}</span>
+            <div>
+              <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#5F0C0C', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>Event & Fulfillment Details</h3>
+              <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
+                <div><strong>Date:</strong> {selectedQuote.dateNeeded ? new Date(selectedQuote.dateNeeded).toLocaleDateString() : 'TBD'}</div>
+                <div><strong>Type:</strong> {selectedQuote.eventType || 'N/A'}</div>
+                <div><strong>Fulfillment:</strong> {fulfillment}</div>
               </div>
             </div>
           </div>
 
-          <div style={{ fontSize: '0.85rem', color: '#666', borderTop: '1px solid #eee', paddingTop: '20px' }}>
-            <p style={{ margin: '0 0 5px 0' }}><strong>Terms & Conditions:</strong></p>
-            <p style={{ margin: '0' }}>Valid for 14 days. A 50% deposit is required to secure your booking. The remaining balance is due 7 days prior to the event date.</p>
+          <div style={{ marginBottom: '30px' }}>
+            <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#5F0C0C' }}>Description / Items</h3>
+            <table style={{ width: '100%', borderCollapse: 'collapse', fontSize: '0.9rem' }}>
+              <thead>
+                <tr style={{ borderTop: '1px solid #ddd', borderBottom: '1px solid #ddd' }}>
+                  <th style={{ padding: '10px 0', textAlign: 'left', fontWeight: 'bold' }}>Item / Package</th>
+                  <th style={{ padding: '10px 0', textAlign: 'center', fontWeight: 'bold' }}>Unit Price</th>
+                  <th style={{ padding: '10px 0', textAlign: 'center', fontWeight: 'bold' }}>Quantity</th>
+                  <th style={{ padding: '10px 0', textAlign: 'right', fontWeight: 'bold' }}>Subtotal</th>
+                </tr>
+              </thead>
+              <tbody>
+                {quoteItems.map((item, i) => (
+                  <tr key={item.id || i} style={{ borderBottom: '1px solid #eee' }}>
+                    <td style={{ padding: '12px 0', paddingRight: '15px' }}>{item.name}</td>
+                    <td style={{ padding: '12px 0', textAlign: 'center' }}>{item.unitPrice > 0 ? `R ${item.unitPrice.toLocaleString()}` : '-'}</td>
+                    <td style={{ padding: '12px 0', textAlign: 'center' }}>{item.quantity}</td>
+                    <td style={{ padding: '12px 0', textAlign: 'right' }}>R {(item.unitPrice * item.quantity).toLocaleString()}</td>
+                  </tr>
+                ))}
+              </tbody>
+            </table>
+          </div>
+
+          <div style={{ fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '30px' }}>
+            <div><strong>Preferred Menu / Package Option:</strong> {selectedQuote.selectedMenu || 'Custom'}</div>
+            <div><strong>Estimated Guests:</strong> {selectedQuote.guestCount || 'N/A'}</div>
+            <div><strong>Special Requests:</strong> {specialRequests}</div>
+          </div>
+
+          <div style={{ display: 'flex', justifyContent: 'flex-end', marginBottom: '40px', borderTop: '1px solid #ddd', paddingTop: '20px' }}>
+            <div style={{ fontSize: '1.5rem', fontWeight: 'bold', color: '#5F0C0C' }}>
+              Total: R {totalAmount.toLocaleString()}
+            </div>
+          </div>
+
+          <div style={{ fontSize: '0.85rem', color: '#555', borderTop: '1px solid #ddd', paddingTop: '20px', marginBottom: '40px' }}>
+            <h4 style={{ margin: '0 0 10px 0', color: '#333' }}>Terms & Conditions</h4>
+            <p style={{ margin: '0', lineHeight: '1.5' }}>
+              This quotation is valid for {validDays} days. To secure your event date, a 50% non-refundable deposit is required upon final confirmation. Final headcount and balance are due 7 days prior to the event date. Standard terms and conditions apply.
+            </p>
+          </div>
+
+          <div style={{ textAlign: 'center', fontSize: '0.85rem', fontWeight: 'bold', color: '#333', marginTop: '60px' }}>
+            Thank you for choosing Dimpho ke Lesego Catering! Good Food | Great Service | No Regrets
           </div>
         </div>
       </div>
