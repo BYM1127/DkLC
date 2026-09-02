@@ -82,8 +82,15 @@ export const AdminQuotes = () => {
   };
 
   const [isPrinting, setIsPrinting] = useState(false);
+  const [isCustomQuote, setIsCustomQuote] = useState(false);
   
   // Custom Quotation State
+  const [clientName, setClientName] = useState('');
+  const [clientPhone, setClientPhone] = useState('');
+  const [eventType, setEventType] = useState('');
+  const [eventDate, setEventDate] = useState('');
+  const [guestCount, setGuestCount] = useState('');
+  const [preferredMenu, setPreferredMenu] = useState('Custom');
   const [clientAddress, setClientAddress] = useState('');
   const [fulfillment, setFulfillment] = useState('Delivery');
   const [quoteItems, setQuoteItems] = useState([
@@ -93,14 +100,35 @@ export const AdminQuotes = () => {
   const [validDays] = useState('14');
 
   useEffect(() => {
-    if (selectedQuote) {
+    if (selectedQuote && !isCustomQuote) {
       setQuoteItems([
         { id: '1', name: `Catering Package: ${selectedQuote.selectedMenu || 'Custom'}`, unitPrice: 0, quantity: selectedQuote.guestCount || 1 }
       ]);
       setSpecialRequests(selectedQuote.notes || 'None');
       setClientAddress(selectedQuote.venueLocation || '');
+      setClientName(selectedQuote.name || '');
+      setClientPhone(selectedQuote.phone || '');
+      setEventType(selectedQuote.eventType || '');
+      setEventDate(selectedQuote.dateNeeded ? new Date(selectedQuote.dateNeeded).toLocaleDateString() : '');
+      setGuestCount(selectedQuote.guestCount?.toString() || '');
+      setPreferredMenu(selectedQuote.selectedMenu || 'Custom');
     }
-  }, [selectedQuote]);
+  }, [selectedQuote, isCustomQuote]);
+
+  const handleCreateStandaloneQuote = () => {
+    setSelectedQuote(null);
+    setIsCustomQuote(true);
+    setClientName('');
+    setClientPhone('');
+    setEventType('');
+    setEventDate('');
+    setGuestCount('');
+    setClientAddress('');
+    setPreferredMenu('Custom');
+    setSpecialRequests('None');
+    setQuoteItems([{ id: '1', name: 'Catering Service Package', unitPrice: 0, quantity: 1 }]);
+    setIsPrinting(true);
+  };
 
   const handleAddItem = () => {
     setQuoteItems([...quoteItems, { id: Math.random().toString(), name: '', unitPrice: 0, quantity: 1 }]);
@@ -120,7 +148,7 @@ export const AdminQuotes = () => {
 
   if (loading) return <div className="admin-loading"><div className="admin-spinner" /></div>;
 
-  if (isPrinting && selectedQuote) {
+  if (isPrinting) {
     const totalAmount = calculateTotal();
     
     return (
@@ -129,6 +157,26 @@ export const AdminQuotes = () => {
           <h3 style={{ margin: '0 0 15px 0' }}>Quote Generator Controls</h3>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
+            {isCustomQuote && (
+              <>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Client Name</label>
+                  <input type="text" value={clientName} onChange={e => setClientName(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Client Phone</label>
+                  <input type="text" value={clientPhone} onChange={e => setClientPhone(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Event Type</label>
+                  <input type="text" value={eventType} onChange={e => setEventType(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Event Date</label>
+                  <input type="text" value={eventDate} onChange={e => setEventDate(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+              </>
+            )}
             <div>
               <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Client Address</label>
               <input type="text" value={clientAddress} onChange={e => setClientAddress(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
@@ -137,6 +185,18 @@ export const AdminQuotes = () => {
               <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Fulfillment (e.g., Delivery, Collection)</label>
               <input type="text" value={fulfillment} onChange={e => setFulfillment(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
             </div>
+            {isCustomQuote && (
+              <>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Estimated Guests</label>
+                  <input type="text" value={guestCount} onChange={e => setGuestCount(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+                <div>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Preferred Menu / Option</label>
+                  <input type="text" value={preferredMenu} onChange={e => setPreferredMenu(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
+                </div>
+              </>
+            )}
           </div>
 
           <div style={{ marginBottom: '20px' }}>
@@ -159,7 +219,7 @@ export const AdminQuotes = () => {
           
           <div style={{ display: 'flex', gap: '10px', alignItems: 'center', flexWrap: 'wrap', borderTop: '1px solid #ddd', paddingTop: '20px' }}>
             <button className="btn-admin btn-admin-primary" onClick={() => window.print()}>Print / Save as PDF</button>
-            <button className="btn-admin btn-admin-outline" onClick={() => setIsPrinting(false)}>Back to Admin</button>
+            <button className="btn-admin btn-admin-outline" onClick={() => { setIsPrinting(false); setIsCustomQuote(false); }}>Back to Admin</button>
           </div>
         </div>
         
@@ -182,16 +242,16 @@ export const AdminQuotes = () => {
             <div>
               <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#5F0C0C', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>Client Details</h3>
               <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-                <div><strong>Name:</strong> {selectedQuote.name}</div>
-                <div><strong>Phone:</strong> {selectedQuote.phone}</div>
+                <div><strong>Name:</strong> {clientName || '_____________________'}</div>
+                <div><strong>Phone:</strong> {clientPhone || '_____________________'}</div>
                 <div><strong>Address:</strong> {clientAddress || '_____________________'}</div>
               </div>
             </div>
             <div>
               <h3 style={{ margin: '0 0 10px 0', fontSize: '1rem', color: '#5F0C0C', borderBottom: '1px solid #ddd', paddingBottom: '5px' }}>Event & Fulfillment Details</h3>
               <div style={{ fontSize: '0.9rem', lineHeight: '1.6' }}>
-                <div><strong>Date:</strong> {selectedQuote.dateNeeded ? new Date(selectedQuote.dateNeeded).toLocaleDateString() : 'TBD'}</div>
-                <div><strong>Type:</strong> {selectedQuote.eventType || 'N/A'}</div>
+                <div><strong>Date:</strong> {eventDate || 'TBD'}</div>
+                <div><strong>Type:</strong> {eventType || 'N/A'}</div>
                 <div><strong>Fulfillment:</strong> {fulfillment}</div>
               </div>
             </div>
@@ -222,8 +282,8 @@ export const AdminQuotes = () => {
           </div>
 
           <div style={{ fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '30px' }}>
-            <div><strong>Preferred Menu / Package Option:</strong> {selectedQuote.selectedMenu || 'Custom'}</div>
-            <div><strong>Estimated Guests:</strong> {selectedQuote.guestCount || 'N/A'}</div>
+            <div><strong>Preferred Menu / Package Option:</strong> {preferredMenu || 'Custom'}</div>
+            <div><strong>Estimated Guests:</strong> {guestCount || 'N/A'}</div>
             <div><strong>Special Requests:</strong> {specialRequests}</div>
           </div>
 
@@ -255,6 +315,9 @@ export const AdminQuotes = () => {
           <h1>Quotes</h1>
           <p className="admin-page-subtitle">Manage customer quote requests.</p>
         </div>
+        <button className="btn-admin btn-admin-primary" onClick={handleCreateStandaloneQuote}>
+          + Create Custom Quote
+        </button>
       </div>
 
       <div className="admin-section">
