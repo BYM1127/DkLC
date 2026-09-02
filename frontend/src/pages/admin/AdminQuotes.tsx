@@ -310,18 +310,15 @@ export const AdminQuotes = () => {
 
   return (
     <div className="admin-page">
-      <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center' }}>
+      <div className="admin-page-header" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '10px' }}>
         <div>
           <h1>Quotes</h1>
           <p className="admin-page-subtitle">Manage customer quote requests.</p>
         </div>
-        <button className="btn-admin btn-admin-primary" onClick={handleCreateStandaloneQuote}>
-          + Create Custom Quote
-        </button>
       </div>
 
       <div className="admin-section">
-        <div className="admin-toolbar">
+        <div className="admin-toolbar" style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', flexWrap: 'wrap', gap: '15px' }}>
           <div className="admin-search">
             <Search size={18} />
             <input 
@@ -331,6 +328,13 @@ export const AdminQuotes = () => {
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
+          <button 
+            className="btn-admin btn-admin-primary" 
+            onClick={handleCreateStandaloneQuote}
+            style={{ background: '#5F0C0C', color: 'white' }}
+          >
+            + Create Custom Quote
+          </button>
         </div>
 
         <div className="admin-table-wrap">
