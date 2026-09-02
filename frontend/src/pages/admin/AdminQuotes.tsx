@@ -98,6 +98,7 @@ export const AdminQuotes = () => {
   ]);
   const [specialRequests, setSpecialRequests] = useState('None');
   const [validDays] = useState('14');
+  const [quoteServiceType, setQuoteServiceType] = useState('Catering');
 
   useEffect(() => {
     if (selectedQuote && !isCustomQuote) {
@@ -126,7 +127,24 @@ export const AdminQuotes = () => {
     setClientAddress('');
     setPreferredMenu('Custom');
     setSpecialRequests('None');
+    setQuoteServiceType('Catering');
     setQuoteItems([{ id: '1', name: 'Catering Service Package', unitPrice: 0, quantity: 1 }]);
+    setIsPrinting(true);
+  };
+
+  const handleCreateDecorQuote = () => {
+    setSelectedQuote(null);
+    setIsCustomQuote(true);
+    setClientName('');
+    setClientPhone('');
+    setEventType('');
+    setEventDate('');
+    setGuestCount('');
+    setClientAddress('');
+    setPreferredMenu('Custom Setup');
+    setSpecialRequests('None');
+    setQuoteServiceType('Decor');
+    setQuoteItems([{ id: '1', name: 'Event Decor Package', unitPrice: 0, quantity: 1 }]);
     setIsPrinting(true);
   };
 
@@ -154,7 +172,21 @@ export const AdminQuotes = () => {
     return (
       <div style={{ padding: '40px', background: 'white', color: '#333', minHeight: '100vh', fontFamily: 'serif' }}>
         <div className="no-print" style={{ marginBottom: '20px', padding: '20px', background: '#f5f5f5', borderRadius: '8px', fontFamily: 'sans-serif' }}>
-          <h3 style={{ margin: '0 0 15px 0' }}>Quote Generator Controls</h3>
+          <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'center', marginBottom: '15px', flexWrap: 'wrap', gap: '10px' }}>
+            <h3 style={{ margin: 0 }}>Quote Generator Controls</h3>
+            <div style={{ display: 'flex', alignItems: 'center', gap: '10px' }}>
+              <label style={{ fontWeight: 'bold', fontSize: '0.9rem' }}>Service Type:</label>
+              <select 
+                value={quoteServiceType} 
+                onChange={e => setQuoteServiceType(e.target.value)} 
+                style={{ padding: '6px 12px', border: '1px solid #ccc', borderRadius: '4px' }}
+              >
+                <option value="Catering">Catering Services</option>
+                <option value="Decor">Decor Services</option>
+                <option value="Combined">Catering & Decor Services</option>
+              </select>
+            </div>
+          </div>
           
           <div style={{ display: 'grid', gridTemplateColumns: '1fr 1fr', gap: '15px', marginBottom: '20px' }}>
             {isCustomQuote && (
@@ -192,7 +224,7 @@ export const AdminQuotes = () => {
                   <input type="text" value={guestCount} onChange={e => setGuestCount(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
                 </div>
                 <div>
-                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Preferred Menu / Option</label>
+                  <label style={{ display: 'block', fontSize: '0.9rem', marginBottom: '4px' }}>Preferred Package / Option</label>
                   <input type="text" value={preferredMenu} onChange={e => setPreferredMenu(e.target.value)} style={{ width: '100%', padding: '8px', border: '1px solid #ccc', borderRadius: '4px' }} />
                 </div>
               </>
@@ -229,10 +261,14 @@ export const AdminQuotes = () => {
           <div style={{ display: 'flex', justifyContent: 'space-between', marginBottom: '30px', alignItems: 'flex-start' }}>
             <div>
               <h1 style={{ color: '#5F0C0C', margin: '0 0 5px 0', fontSize: '2rem', fontFamily: 'serif' }}>Dimpho ke Lesego</h1>
-              <h2 style={{ margin: 0, fontSize: '0.85rem', color: '#888', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>Catering Services</h2>
+              <h2 style={{ margin: 0, fontSize: '0.85rem', color: '#888', letterSpacing: '2px', textTransform: 'uppercase', fontFamily: 'sans-serif' }}>
+                {quoteServiceType === 'Decor' ? 'Decor Services' : quoteServiceType === 'Combined' ? 'Catering & Decor Services' : 'Catering Services'}
+              </h2>
             </div>
             <div style={{ textAlign: 'right', color: '#555' }}>
-              <h1 style={{ margin: '0 0 5px 0', color: '#333', fontSize: '1.4rem', fontStyle: 'italic', fontFamily: 'serif' }}>Event Catering Quotation</h1>
+              <h1 style={{ margin: '0 0 5px 0', color: '#333', fontSize: '1.4rem', fontStyle: 'italic', fontFamily: 'serif' }}>
+                {quoteServiceType === 'Decor' ? 'Event Decor Quotation' : quoteServiceType === 'Combined' ? 'Event Services Quotation' : 'Event Catering Quotation'}
+              </h1>
               <p style={{ margin: '2px 0', fontSize: '0.9rem' }}>Date: {new Date().toLocaleDateString()}</p>
               <p style={{ margin: '2px 0', fontSize: '0.9rem' }}>Valid For: {validDays} Days</p>
             </div>
@@ -282,7 +318,7 @@ export const AdminQuotes = () => {
           </div>
 
           <div style={{ fontSize: '0.9rem', lineHeight: '1.6', marginBottom: '30px' }}>
-            <div><strong>Preferred Menu / Package Option:</strong> {preferredMenu || 'Custom'}</div>
+            <div><strong>Preferred Package / Option:</strong> {preferredMenu || 'Custom'}</div>
             <div><strong>Estimated Guests:</strong> {guestCount || 'N/A'}</div>
             <div><strong>Special Requests:</strong> {specialRequests}</div>
           </div>
@@ -328,13 +364,22 @@ export const AdminQuotes = () => {
               onChange={e => setSearchTerm(e.target.value)}
             />
           </div>
-          <button 
-            className="btn-admin btn-admin-primary" 
-            onClick={handleCreateStandaloneQuote}
-            style={{ background: '#5F0C0C', color: 'white' }}
-          >
-            + Create Custom Quote
-          </button>
+          <div style={{ display: 'flex', gap: '10px', flexWrap: 'wrap' }}>
+            <button 
+              className="btn-admin btn-admin-primary" 
+              onClick={handleCreateStandaloneQuote}
+              style={{ background: '#5F0C0C', color: 'white' }}
+            >
+              + Create Catering Quote
+            </button>
+            <button 
+              className="btn-admin btn-admin-primary" 
+              onClick={handleCreateDecorQuote}
+              style={{ background: '#C2902F', color: 'white' }}
+            >
+              + Create Decor Quote
+            </button>
+          </div>
         </div>
 
         <div className="admin-table-wrap">
